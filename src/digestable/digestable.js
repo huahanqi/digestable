@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import './digestable.css';
 
 export const digestable = () => {
   function digestable(selection) {
@@ -17,8 +18,7 @@ export const digestable = () => {
         .data([data])
         .join(
           enter => {
-            const table = enter.append('table')
-              .style('width', '100%');
+            const table = enter.append('table');
 
             table.append('thead').append('tr');
             table.append('tbody');
@@ -40,11 +40,7 @@ export const digestable = () => {
       function drawHeader() {
         table.select('thead').select('tr').selectAll('th')
           .data(data.columns)
-          .join(enter => enter.append('th')
-            .style('border', '1px solid #ccc')
-            .style('background-color', '#eee')
-            .style('padding', px)
-          )
+          .join('th')
           .style('padding-left', px)
           .style('padding-right', px)
           .style('padding-top', py)
@@ -59,9 +55,7 @@ export const digestable = () => {
           .each(function(d) {
             d3.select(this).selectAll('td')
               .data(data.columns)
-              .join(enter => enter.append('td')
-                .style('border', '1px solid #ccc')
-              )
+              .join('td')
               .style('padding-left', px)
               .style('padding-right', px)
               .style('padding-top', py)

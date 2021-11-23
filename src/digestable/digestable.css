@@ -1,0 +1,20 @@
+table { 
+  border-collapse: separate; 
+  border-spacing: 0px;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+}
+
+table thead th { 
+  position: sticky; 
+  top: 0; 
+  z-index: 1; 
+}
+
+th, td { 
+  border: 1px solid #ccc; 
+}
+
+th { 
+  background-color: #eee; 
+}

@@ -52,7 +52,7 @@ export const App = () => {
           />
         </Form>
       </Navbar>
-      <Container fluid style={{ height: "calc(100% - 80px)" }}>      
+      <Container fluid style={{ height: "calc(100% - 100px)" }}>      
         <Row style={{ height: "100%" }}>
           <Col className='mt-3' style={{ height: "100%"}}>
             <TableWrapper data={ data } />

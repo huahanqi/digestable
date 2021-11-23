@@ -24,7 +24,7 @@ export const TableWrapper = ({ data }) => {
     <div 
       ref={ divRef }
       style={{ 
-        maxHeight: "100%",
+        height: '100%',
         overflow: 'auto'
       }}
     />
