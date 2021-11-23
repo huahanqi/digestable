@@ -2,8 +2,12 @@ import * as d3 from 'd3';
 
 export const digestable = () => {
   function digestable(selection) {
-    let table = d3.select(),
-        data = null;
+    let table = d3.select(),        
+        data = null,
+        
+        // Parameters
+        paddingX = 5,
+        paddingY = 0;
 
     selection.each(function(d) {
       data = d;
@@ -14,7 +18,7 @@ export const digestable = () => {
         .join(
           enter => {
             const table = enter.append('table')
-              .style("width", "100%");
+              .style('width', '100%');
 
             table.append('thead').append('tr');
             table.append('tbody');
@@ -27,28 +31,43 @@ export const digestable = () => {
     });
 
     function drawTable() {
+      const px = paddingX + 'px';
+      const py = paddingY + 'px';
+
       drawHeader();
       drawBody();
 
       function drawHeader() {
         table.select('thead').select('tr').selectAll('th')
-          .data(data[0])
+          .data(data.columns)
           .join(enter => enter.append('th')
             .style('border', '1px solid #ccc')
             .style('background-color', '#eee')
+            .style('padding', px)
           )
+          .style('padding-left', px)
+          .style('padding-right', px)
+          .style('padding-top', py)
+          .style('padding-bottom', py)
           .text(d => d);
       }
 
       function drawBody() {
         table.select('tbody').selectAll('tr')
-          .data(data.slice(1))
-          .join('tr').selectAll('td')
-          .data(d => d)
-          .join(enter => enter.append('td')
-            .style('border', '1px solid #ccc')
-          )
-          .text(d => d);
+          .data(data)
+          .join('tr')
+          .each(function(d) {
+            d3.select(this).selectAll('td')
+              .data(data.columns)
+              .join(enter => enter.append('td')
+                .style('border', '1px solid #ccc')
+              )
+              .style('padding-left', px)
+              .style('padding-right', px)
+              .style('padding-top', py)
+              .style('padding-bottom', py)
+              .text(column => d[column]);
+          })          
       }
     }  
   }

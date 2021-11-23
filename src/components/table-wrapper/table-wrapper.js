@@ -21,6 +21,12 @@ export const TableWrapper = ({ data }) => {
   }, [data]);
 
   return (
-    <div ref={ divRef }></div>
+    <div 
+      ref={ divRef }
+      style={{ 
+        maxHeight: "100%",
+        overflow: 'auto'
+      }}
+    />
   );
 };           
