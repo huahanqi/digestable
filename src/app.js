@@ -39,10 +39,10 @@ export const App = () => {
           <img 
             src='/digestable_512.png' 
             alt='digestable logo'
-            height='25px'
-            className='me-1 align-text-bottom'              
+            height='32px'
+            className='me-1'              
           />
-          <span className='align-text-bottom'>diges<b>table</b></span>
+          <span className='text-align-bottom'>diges<b>table</b></span>
         </Brand>        
         <Form>
           <Control 
