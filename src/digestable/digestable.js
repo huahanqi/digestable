@@ -127,9 +127,9 @@ export const digestable = () => {
       const py = paddingY + 'px';
 
       const sortIcon = sort => (
-        sort === null ? '↓' :
+        sort === 'ascending' ? '↓' :
         sort === 'descending' ? '↑' :
-        '🗙'
+        '↕'
       );
 
       drawHeader();
@@ -149,7 +149,6 @@ export const digestable = () => {
               
               div.append('button')
                 .attr('class', 'sortButton')
-                .text('↕')
                 .on("click", (evt, d) => {
                   sortByColumn(d);
                   processData();
@@ -165,7 +164,8 @@ export const digestable = () => {
           .style('padding-bottom', py);
 
         th.select('.sortButton')
-          .classed('active', d => d.sort !== null);
+          .classed('active', d => d.sort !== null)
+          .text(d => sortIcon(d.sort));
       }
 
       function drawBody() {
