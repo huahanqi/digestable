@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import kmeans from './kmeans';
 import './digestable.css';
 
 const initialIndex = '__i__';
@@ -119,7 +120,46 @@ export const digestable = () => {
     }
 
     function processData() {
-      data = [...allData];
+      const sortColumn = columns.find(({ sort }) => sort !== null);
+
+      if (sortColumn) {
+        const { name, type, sort } = sortColumn;
+
+        switch (type) {
+          case 'numeric': {
+            const values = allData.map(d => [d[name]]);
+
+            const { clusters } = kmeans(values, 20);
+
+            clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
+
+            data = clusters.map(cluster => {
+              const v = {};
+
+              columns.forEach(({ name, type }) => {
+                if (type === 'numeric') {
+                  v[name] = d3.mean(cluster.indeces, i => allData[i][name]);
+                }
+                else {
+                  v[name] = '?';
+                }
+              });
+
+              return v;
+            });
+
+            console.log(data);
+
+            break;
+          }
+
+          default:
+            data =[...allData];
+        } 
+      }
+      else {
+        data = [...allData];
+      }
     }
 
     function drawTable() {
