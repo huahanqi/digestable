@@ -126,30 +126,46 @@ export const digestable = () => {
       const px = paddingX + 'px';
       const py = paddingY + 'px';
 
-      const sortCursor = sort => (
-        sort === null ? 's-resize' :
-        sort === 'descending' ? 'n-resize' :
-        'default'
+      const sortIcon = sort => (
+        sort === null ? '↓' :
+        sort === 'descending' ? '↑' :
+        '🗙'
       );
 
       drawHeader();
       drawBody();
 
       function drawHeader() {
-        table.select('thead').select('tr').selectAll('th')
+        const th = table.select('thead').select('tr').selectAll('th')
           .data(columns, d => d.name)
-          .join('th')
+          .join(
+            enter => {
+              const th = enter.append('th');
+
+              const div = th.append('div');
+              
+              div.append('div')                
+                .text(d => d.name);
+              
+              div.append('button')
+                .attr('class', 'sortButton')
+                .text('↕')
+                .on("click", (evt, d) => {
+                  sortByColumn(d);
+                  processData();
+                  drawTable()
+                });
+
+              return th;
+            }
+          )
           .style('padding-left', px)
           .style('padding-right', px)
           .style('padding-top', py)
-          .style('padding-bottom', py)
-          .style('cursor', d => sortCursor(d.sort))
-          .text(d => d.name)
-          .on("click", (evt, d) => {
-            sortByColumn(d);
-            processData();
-            drawTable()
-          });
+          .style('padding-bottom', py);
+
+        th.select('.sortButton')
+          .classed('active', d => d.sort !== null);
       }
 
       function drawBody() {

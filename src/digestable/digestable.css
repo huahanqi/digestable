@@ -13,8 +13,33 @@ table thead th {
 
 th, td { 
   border: 1px solid #ccc; 
+  white-space: nowrap;
 }
 
 th { 
   background-color: #eee; 
+}
+
+th > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sortButton {
+  display: inline-block;
+  color: #aaa;
+  border: none;
+  border-radius: 5px;
+  padding-block: 0px;
+  margin-left: .5em;
+}
+
+.sortButton:hover {
+  color: #888;
+  background-color: #ddd;
+}
+
+.sortButton.active {
+  color: #777;
+  background-color: #ccc;
 }
