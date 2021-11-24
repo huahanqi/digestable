@@ -1,10 +1,12 @@
 import * as d3 from 'd3';
 import './digestable.css';
 
+const initialIndex = '__i__';
+
 export const digestable = () => {
   function digestable(selection) {
     let table = d3.select(),        
-        inputData = [],
+        allData = [],
         data = [],
         columns = [],
         
@@ -13,11 +15,9 @@ export const digestable = () => {
         paddingY = 0;
 
     selection.each(function(d) {
-      inputData = d;
-
       // Create skeletal table
       table = d3.select(this).selectAll('table')
-        .data([data])
+        .data([[]])
         .join(
           enter => {
             const table = enter.append('table');
@@ -29,8 +29,10 @@ export const digestable = () => {
           }
         );
 
-      createColumns();
+      createColumns(d);      
+      createData(d);
       sortData();
+      processData();
       drawTable();
     });
 
@@ -39,14 +41,60 @@ export const digestable = () => {
       columns.forEach(d => d.sort = null);
     }
 
-    function createColumns() {
+    function createColumns(inputData) {
       columns = inputData.columns.map(d => ({ name: d }));
+
+      // Determine column types
+      columns.forEach(column => {
+        const { name } = column;
+        const values = Array.from(inputData.reduce((values, d) => values.add(d[name]), new Set()));
+        const numeric = values.reduce((numeric, value) => numeric && (!isNaN(value) || value === ''), true);
+
+        if (numeric) {
+          if (values.length === inputData.length) {
+            // Heuristic to check for integer ID type
+            const numbers = values.map(d => +d);
+            numbers.sort((a, b) => d3.ascending(a, b));
+
+            const isId = numbers.reduce((isId, d, i, a) => isId && (i === 0 || d === a[i - 1] + 1), true);
+
+            column.type = isId ? 'id' : 'numeric';
+          }
+          else {
+            column.type = 'numeric';            
+          }
+        }
+        else if (values.length === inputData.length) {
+          column.type = 'id';
+        }
+        else {
+          column.type = 'categorical';
+        }
+      });
 
       clearSorting();
     }
 
+    function createData(inputData) {
+      allData = inputData.map((d, i) => {
+        const v = {...d};
+
+        // Store initial order for sorting
+        v[initialIndex] = i;
+
+        // Convert numeric
+        columns.filter(({ type }) => type === 'numeric').forEach(({ name, type }) => {
+          v[name] = v[name] === '' ? null : +v[name];
+        });
+
+        return v;
+      });
+    }
+
     function sortByColumn(column) {    
-      const sort = column.sort === 'ascending' ? 'descending' : 'ascending';
+      const sort = column.sort === null ? 'descending' :
+        column.sort === 'descending' ? 'ascending' :
+        null;
       
       clearSorting();
 
@@ -61,21 +109,28 @@ export const digestable = () => {
       if (sortColumn) {
         const { name, sort } = sortColumn;
 
-        data = inputData.sort((a, b) => {
-          return d3[sort](a[name], b[name]);
-        });
+        const sortValue = value => value === null ? Number.NEGATIVE_INFINITY : value;
+
+        allData.sort((a, b) => d3[sort](sortValue(a[name]), sortValue(b[name])));
       }
       else {
-        data = [...inputData];
+        allData.sort((a, b) => d3.ascending(a[initialIndex], b[initialIndex]));
       }
     }
 
     function processData() {
+      data = [...allData];
     }
 
     function drawTable() {
       const px = paddingX + 'px';
       const py = paddingY + 'px';
+
+      const sortCursor = sort => (
+        sort === null ? 's-resize' :
+        sort === 'descending' ? 'n-resize' :
+        'default'
+      );
 
       drawHeader();
       drawBody();
@@ -88,10 +143,11 @@ export const digestable = () => {
           .style('padding-right', px)
           .style('padding-top', py)
           .style('padding-bottom', py)
+          .style('cursor', d => sortCursor(d.sort))
           .text(d => d.name)
           .on("click", (evt, d) => {
-            console.log(d);
             sortByColumn(d);
+            processData();
             drawTable()
           });
       }
