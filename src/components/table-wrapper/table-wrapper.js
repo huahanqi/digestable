@@ -2,14 +2,15 @@ import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { digestable } from '../../digestable';
 
-export const TableWrapper = ({ data }) => {
+export const TableWrapper = ({ data, simplify }) => {
   const divRef = useRef();
   const digestableRef = useRef();
 
   // Create visualization
   useEffect(() => {
     if (!digestableRef.current) {
-      digestableRef.current = digestable();
+      digestableRef.current = digestable()
+        .simplify(simplify);
     }
   }, []);
 
@@ -19,6 +20,13 @@ export const TableWrapper = ({ data }) => {
       .datum(data)
       .call(digestableRef.current);
   }, [data]);
+
+  // Update parameters
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.simplify(simplify);
+    }
+  }, [simplify]);
 
   return (
     <div 
