@@ -52,13 +52,22 @@ export const App = () => {
           />
         </Form>
       </Navbar>
-      <Container fluid style={{ height: "calc(100% - 100px)" }}>      
-        <Row style={{ height: "100%" }}>
-          <Col className='mt-3' style={{ height: "100%"}}>
-            <TableWrapper data={ data } />
-          </Col>
-        </Row>
-      </Container>
+      { !data || data.length === 0 ? 
+        <Container fluid style={{ height: 'calc(100% - 100px)' }}>      
+          <Row style={{ height: '100%' }}>
+            <Col className='mt-3' style={{ height: '100%'}}>
+              <TableWrapper data={ data } />
+            </Col>
+          </Row>
+        </Container>
+      :
+        <Container>
+          <div className='m-4 text-center'>
+            <h3>No data</h3>
+            Load data in CSV format
+          </div>
+        </Container>
+      }
     </>
   );
 };
