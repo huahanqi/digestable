@@ -32,6 +32,8 @@ export const App = () => {
     }
   };
 
+  console.log(data);
+
   return (
     <>
       <Navbar bg='dark' variant='dark'>
@@ -52,7 +54,7 @@ export const App = () => {
           />
         </Form>
       </Navbar>
-      { !data || data.length === 0 ? 
+      { data && data.length > 0 ? 
         <Container fluid style={{ height: 'calc(100% - 100px)' }}>      
           <Row style={{ height: '100%' }}>
             <Col className='mt-3' style={{ height: '100%'}}>
