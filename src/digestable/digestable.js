@@ -54,12 +54,14 @@ export const digestable = () => {
     columns.forEach(column => {
       const { name } = column;
       const values = Array.from(inputData.reduce((values, d) => values.add(d[name]), new Set()));
-      const numeric = values.reduce((numeric, value) => numeric && (!isNaN(value) || value === ''), true);
+      const validValues = values.filter(value => value !== '');
+      const numeric = validValues.reduce((numeric, value) => numeric && !isNaN(value), true);
 
-      if (numeric) {
-        if (values.length === inputData.length) {
+      if (numeric) {        
+        const numbers = validValues.map(d => +d);
+
+        if (numbers.length === inputData.length) {
           // Heuristic to check for integer ID type
-          const numbers = values.map(d => +d);
           numbers.sort((a, b) => d3.ascending(a, b));
 
           const isId = numbers.reduce((isId, d, i, a) => isId && (i === 0 || d === a[i - 1] + 1), true);
@@ -68,6 +70,10 @@ export const digestable = () => {
         }
         else {
           column.type = 'numeric';            
+        }
+
+        if (column.type === 'numeric') {
+          column.extent = d3.extent(numbers);
         }
       }
       else if (values.length === inputData.length) {
@@ -141,10 +147,29 @@ export const digestable = () => {
 
             columns.forEach(({ name, type }) => {
               if (type === 'numeric') {
-                const values = cluster.map(i => allData[i][name]).filter(d => d !== null);
+                const values = cluster.map(i => allData[i][name]);
 
-                if (values.length) {
-                  row[name] = d3.mean(values);
+                if (values.length > 1) {
+                  const validValues = values.filter(d => d !== null);
+
+                  row[name] = validValues.length > 0 ?
+                    {
+                      cluster: true,
+                      valid: true,
+                      values: values,
+                      validValues: validValues,
+                      min: d3.min(validValues),
+                      max: d3.max(validValues),                    
+                      mean: d3.mean(validValues)
+                    } :
+                    {
+                      cluster: true,
+                      valid: false,
+                      values: values
+                    };
+                }
+                else if (values.length === 1) {
+                  row[name] = values[0];
                 }
                 else {
                   row[name] = null;
@@ -242,9 +267,23 @@ export const digestable = () => {
 
       const text = ({ type, name }, d) => {
         const v = d[name];
-        return v === null ? '' : 
-          type === 'numeric' ? numberFormat(d[name]) : 
-          d[name];
+
+        switch (type) {
+          case 'numeric':
+            return v === null ? '' :
+              v.cluster && v.valid ? `${ numberFormat(v.min) }–${ numberFormat(v.max) }` :
+              v.cluster ? '' :
+              numberFormat(v);
+
+          case 'id':
+          case 'categorical':
+            return v === null ? '' :
+              v.cluster ? '?' :
+              v;
+
+          default:
+            return null;
+        }
       }
 
       table.select('tbody').selectAll('tr')
@@ -258,7 +297,46 @@ export const digestable = () => {
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
-            .text(column => text(column, d));
+            .text(column => text(column, d))
+            .each(function(column) {
+              const v = d[column.name];
+
+              switch (column.type) {
+                case 'numeric':
+                  if (v !== null) {
+                    const h = 5;
+                    const r = h / 2;
+
+                    const scale = d3.scaleLinear()
+                      .domain(column.extent)
+                      .range([0, 100]);
+
+                    const left = v.cluster ? scale(v.min) : scale(v);
+                    const width = v.cluster ? Math.max(scale(v.max) - left, h) : h;
+
+                    // XXX: Handle enter/update/exit properly instead of this
+                    d3.select(this).selectAll('div').remove();
+
+                    d3.select(this).append('div')
+                      .style('position', 'relative')
+                      .style('background-color', '#aaa') 
+                      .style('margin-bottom', `2px`)           
+                      .style('height', `${ h }px`)
+                      .style('left', `${ left }%`)
+                      .style('width', `${ width }%`)
+                      .style('border-radius', `${ r }px`);
+                  }
+
+                  break;
+
+                case 'id':
+                case 'categorical':
+                  break;
+
+                default:
+                  console.log(`Unknown column type ${ column.stype }`);
+              }
+            })        
         })          
     }
   } 
