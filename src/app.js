@@ -1,16 +1,15 @@
 import { useState } from 'react';
 import { Container, Navbar, Row, Col, Form } from 'react-bootstrap';
 import * as d3 from 'd3';
+import { SimplifyProvider } from './contexts';
 import { TableWrapper } from './components/table-wrapper';
-import { Controls } from './components/controls';
+import { SimplifyControls } from './components/simplifyControls';
 
 const { Brand } = Navbar;
 const { Control } = Form;
 
 export const App = () => {
   const [data, setData] = useState(null);
-  const [simplify, setSimplify] = useState(false);
-  const [simplification, setSimplification] = useState(0.9);
 
   const onFileSelect = async evt => {
     const file = evt.target.files.length === 1 ? evt.target.files[0] : null;
@@ -32,18 +31,8 @@ export const App = () => {
     }
   };
 
-  const onSimplifyChange = value => {
-    setSimplify(value);
-  };
-
-  const onSimplificationChange = value => {
-    setSimplification(value);
-  };
-
-  console.log(simplification);
-
   return (
-    <>
+    <SimplifyProvider>
       <Navbar bg='dark' variant='dark'>
         <Brand className='ms-2'>
           <img 
@@ -66,19 +55,10 @@ export const App = () => {
         <Container fluid style={{ height: 'calc(100% - 100px)' }}>      
           <Row style={{ height: '100%' }}>
             <Col xs={ 10 } className='mt-3' style={{ height: '100%'}}>
-              <TableWrapper 
-                data={ data } 
-                simplify={ simplify } 
-                simplification={ simplification }
-              />
+              <TableWrapper data={ data } />
             </Col>
             <Col className='bg-dark text-light pt-3'>
-              <Controls 
-                simplify={ simplify } 
-                simplification={ simplification }
-                onSimplifyChange={ onSimplifyChange } 
-                onSimplificationChange={ onSimplificationChange }
-              />
+              <SimplifyControls />
             </Col>
           </Row>
         </Container>
@@ -89,6 +69,6 @@ export const App = () => {
           </div>
         </Container>
       }
-    </>
+    </SimplifyProvider>
   );
 };

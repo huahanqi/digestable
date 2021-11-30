@@ -1,8 +1,10 @@
-import { useRef, useEffect } from 'react';
+import { useContext, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
+import { SimplifyContext } from '../../contexts';
 import { digestable } from '../../digestable';
 
-export const TableWrapper = ({ data, simplify, simplification }) => {
+export const TableWrapper = ({ data }) => {
+  const [{ apply, method, amount }, simplifyDispatch] = useContext(SimplifyContext);
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -10,8 +12,8 @@ export const TableWrapper = ({ data, simplify, simplification }) => {
   useEffect(() => {
     if (!digestableRef.current) {
       digestableRef.current = digestable()
-        .simplify(simplify)        
-        .simplification(simplification);
+        .simplify(apply)        
+        .simplification(amount);
     }
   }, []);
 
@@ -25,15 +27,15 @@ export const TableWrapper = ({ data, simplify, simplification }) => {
   // Update parameters
   useEffect(() => {
     if (digestableRef.current) {
-      digestableRef.current.simplify(simplify);
+      digestableRef.current.simplify(apply);
     }
-  }, [simplify]);
+  }, [apply]);
 
   useEffect(() => {
     if (digestableRef.current) {
-      digestableRef.current.simplification(simplification);
+      digestableRef.current.simplification(amount);
     }
-  }, [simplification]);
+  }, [amount]);
 
   return (
     <div 
