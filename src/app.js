@@ -11,13 +11,14 @@ const { Control } = Form;
 export const App = () => {
   const [data, setData] = useState(null);
 
+  // XXX: Add loading spinner
+
   const onFileSelect = async evt => {
+    setData(null);
+
     const file = evt.target.files.length === 1 ? evt.target.files[0] : null;
 
-    if (!file) {
-      setData(null);
-      return;
-    }
+    if (!file) return;
 
     const url = URL.createObjectURL(file);
 
