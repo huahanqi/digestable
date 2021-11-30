@@ -2,7 +2,7 @@ import { useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { digestable } from '../../digestable';
 
-export const TableWrapper = ({ data, simplify }) => {
+export const TableWrapper = ({ data, simplify, simplification }) => {
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -10,7 +10,8 @@ export const TableWrapper = ({ data, simplify }) => {
   useEffect(() => {
     if (!digestableRef.current) {
       digestableRef.current = digestable()
-        .simplify(simplify);
+        .simplify(simplify)        
+        .simplification(simplification);
     }
   }, []);
 
@@ -27,6 +28,12 @@ export const TableWrapper = ({ data, simplify }) => {
       digestableRef.current.simplify(simplify);
     }
   }, [simplify]);
+
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.simplification(simplification);
+    }
+  }, [simplification]);
 
   return (
     <div 

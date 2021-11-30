@@ -12,6 +12,7 @@ export const digestable = () => {
       
       // Parameters
       simplify = false,
+      simplification = 0.9,
       simplifyMethod = 'threshold',
       paddingX = 5,
       paddingY = 0;
@@ -87,7 +88,7 @@ export const digestable = () => {
       v[initialIndex] = i;
 
       // Convert numeric
-      columns.filter(({ type }) => type === 'numeric').forEach(({ name, type }) => {
+      columns.filter(({ type }) => type === 'numeric').forEach(({ name }) => {
         v[name] = v[name] === '' ? null : +v[name];
       });
 
@@ -197,7 +198,7 @@ export const digestable = () => {
 
       const diffExtents = d3.extent(diffs);
 
-      const t = (diffExtents[1] - diffExtents[0]) * 0.2;
+      const t = (diffExtents[1] - diffExtents[0]) * simplification;
 
       const clusters = [];
       let cluster = [values.length - 1];
@@ -302,6 +303,14 @@ export const digestable = () => {
   digestable.simplify = function(_) {
     if (!arguments.length) return simplify;
     simplify = _;
+    processData();
+    drawTable();
+    return digestable;
+  };
+
+  digestable.simplification = function(_) {
+    if (!arguments.length) return simplification;
+    simplification = _;
     processData();
     drawTable();
     return digestable;

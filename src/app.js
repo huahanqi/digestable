@@ -10,6 +10,7 @@ const { Control } = Form;
 export const App = () => {
   const [data, setData] = useState(null);
   const [simplify, setSimplify] = useState(false);
+  const [simplification, setSimplification] = useState(0.9);
 
   const onFileSelect = async evt => {
     const file = evt.target.files.length === 1 ? evt.target.files[0] : null;
@@ -31,9 +32,15 @@ export const App = () => {
     }
   };
 
-  const onSimplifyChange = evt => {
-    setSimplify(evt.target.checked);
+  const onSimplifyChange = value => {
+    setSimplify(value);
   };
+
+  const onSimplificationChange = value => {
+    setSimplification(value);
+  };
+
+  console.log(simplification);
 
   return (
     <>
@@ -62,12 +69,15 @@ export const App = () => {
               <TableWrapper 
                 data={ data } 
                 simplify={ simplify } 
+                simplification={ simplification }
               />
             </Col>
             <Col className='bg-dark text-light pt-3'>
               <Controls 
                 simplify={ simplify } 
+                simplification={ simplification }
                 onSimplifyChange={ onSimplifyChange } 
+                onSimplificationChange={ onSimplificationChange }
               />
             </Col>
           </Row>
