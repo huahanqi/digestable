@@ -17,7 +17,7 @@ export default function clusterThreshold(values, threshold) {
   let cluster = [values.length - 1];
 
   const close = (a, b, t) => {
-    return a === null && b === null || Math.abs(a - b) <= t;
+    return (a === null && b === null) || (Math.abs(a - b) <= t);
   };
 
   for (let i = values.length - 2; i >= 0; i--) {

@@ -12,9 +12,9 @@ export const digestable = () => {
       columns = [],
       
       // Parameters
-      simplify = false,
-      simplification = 0.9,
-      simplifyMethod = 'threshold',
+      applySimplification = false,
+      simplificationAmount = 0.9,
+      simplificationMethod = 'threshold',
       paddingX = 5,
       paddingY = 0;
 
@@ -127,7 +127,7 @@ export const digestable = () => {
   function processData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    if (simplify && sortColumn) {
+    if (applySimplification && sortColumn) {
       const { name, type, sort } = sortColumn;
 
       switch (type) {
@@ -170,16 +170,18 @@ export const digestable = () => {
     }
 
     function clusterNumeric(values, sort) {
-      switch (simplifyMethod) {
+      switch (simplificationMethod) {
         case 'kmeans': {
-          const { clusters } = kmeans(values.map(v => [v]), values.length * simplification);
+          const k = Math.floor(d3.interpolateNumber(values.length, 1)(simplificationAmount));
+          //const k = 20;
+          const { clusters } = kmeans(values.map(v => [v]), k);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
           return clusters.map(cluster => cluster.indeces);
         }
 
         case 'threshold': {
-          return clusterThreshold(values, simplification);
+          return clusterThreshold(values, simplificationAmount);
         }
 
         default: {
@@ -261,17 +263,25 @@ export const digestable = () => {
     }
   } 
 
-  digestable.simplify = function(_) {
-    if (!arguments.length) return simplify;
-    simplify = _;
+  digestable.applySimplification = function(_) {
+    if (!arguments.length) return applySimplification;
+    applySimplification = _;
     processData();
     drawTable();
     return digestable;
   };
 
-  digestable.simplification = function(_) {
-    if (!arguments.length) return simplification;
-    simplification = _;
+  digestable.simplificationMethod = function(_) {
+    if (!arguments.length) return simplificationMethod;
+    simplificationMethod = _;
+    processData();
+    drawTable();
+    return digestable;
+  };
+
+  digestable.simplificationAmount = function(_) {
+    if (!arguments.length) return simplificationAmount;
+    simplificationAmount = _;
     processData();
     drawTable();
     return digestable;

@@ -57,7 +57,7 @@ export const App = () => {
             <Col xs={ 10 } className='mt-3' style={{ height: '100%'}}>
               <TableWrapper data={ data } />
             </Col>
-            <Col className='bg-dark text-light pt-3'>
+            <Col className='bg-dark'>
               <SimplifyControls />
             </Col>
           </Row>

@@ -4,7 +4,7 @@ import { SimplifyContext } from '../../contexts';
 import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
-  const [{ apply, method, amount }, simplifyDispatch] = useContext(SimplifyContext);
+  const [{ apply, method, amount }] = useContext(SimplifyContext);
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -12,8 +12,9 @@ export const TableWrapper = ({ data }) => {
   useEffect(() => {
     if (!digestableRef.current) {
       digestableRef.current = digestable()
-        .simplify(apply)        
-        .simplification(amount);
+        .applySimplification(apply)        
+        .simplificationMethod(method)      
+        .simplificationAmount(amount);
     }
   }, []);
 
@@ -27,13 +28,19 @@ export const TableWrapper = ({ data }) => {
   // Update parameters
   useEffect(() => {
     if (digestableRef.current) {
-      digestableRef.current.simplify(apply);
+      digestableRef.current.applySimplification(apply);
     }
   }, [apply]);
 
   useEffect(() => {
     if (digestableRef.current) {
-      digestableRef.current.simplification(amount);
+      digestableRef.current.simplificationMethod(method);
+    }
+  }, [method]);
+
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.simplificationAmount(amount);
     }
   }, [amount]);
 

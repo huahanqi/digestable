@@ -127,7 +127,7 @@ function getLabels(dataSet, centroids) {
         }
       }
     }
-    // add point to centroid labels:
+
     labels[closestCentroidIndex].points.push(a);
     labels[closestCentroidIndex].indeces.push(i);
   }
@@ -171,7 +171,7 @@ function recalculateCentroids(dataSet, labels, k) {
 }
 
 export default function kmeans(dataset, k, useNaiveSharding = true) {
-  if (dataset.length && dataset[0].length && dataset.length > k) {
+  if (dataset.length && dataset[0].length && dataset.length >= k) {
     // Initialize book keeping variables
     let iterations = 0;
     let oldCentroids, labels, centroids;
