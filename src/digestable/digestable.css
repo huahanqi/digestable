@@ -8,7 +8,7 @@ table {
 table thead th { 
   position: sticky; 
   top: 0; 
-  z-index: 1; 
+  z-index: 2; 
 }
 
 th, td { 
@@ -20,6 +20,21 @@ th {
   background-color: #eee; 
 }
 
+th.active {  
+  left: 0;  
+  right: 0;
+  z-index: 3;
+  background-color:  hsl(180, 70%, 90%);
+}
+
+td.active {
+  position: sticky; 
+  left: 0; 
+  right: 0;
+  z-index: 1; 
+  background-color: hsl(180, 100%, 98%);
+}
+
 th > div {
   display: flex;
   justify-content: space-between;
@@ -27,19 +42,14 @@ th > div {
 
 .sortButton {
   display: inline-block;
-  color: #aaa;
   border: none;
   border-radius: 5px;
   padding-block: 0px;
   margin-left: .5em;
+  color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .sortButton:hover {
-  color: #888;
-  background-color: #ddd;
-}
-
-.sortButton.active {
-  color: #777;
-  background-color: #ccc;
+  background-color: rgba(0, 0, 0, 0.1);
 }

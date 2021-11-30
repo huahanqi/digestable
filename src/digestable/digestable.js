@@ -252,6 +252,7 @@ export const digestable = () => {
             return th;
           }
         )
+        .classed('active', d => d.sort !== null)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
@@ -293,6 +294,7 @@ export const digestable = () => {
           d3.select(this).selectAll('td')
             .data(columns)
             .join('td')
+            .classed('active', d => d.sort !== null)
             .style('padding-left', px)
             .style('padding-right', px)
             .style('padding-top', py)
@@ -303,27 +305,43 @@ export const digestable = () => {
 
               switch (column.type) {
                 case 'numeric':
-                  if (v !== null) {
-                    const h = 5;
+                  // XXX: Handle enter/update/exit properly instead of this
+                  d3.select(this).selectAll('div').remove();
+
+                  const scale = d3.scaleLinear()
+                    .domain(column.extent)
+                    .range([0, 100]);
+
+                  if (v !== null && v.valid) {
+                    const h = 3;
                     const r = h / 2;
 
-                    const scale = d3.scaleLinear()
-                      .domain(column.extent)
-                      .range([0, 100]);
-
-                    const left = v.cluster ? scale(v.min) : scale(v);
-                    const width = v.cluster ? Math.max(scale(v.max) - left, h) : h;
-
-                    // XXX: Handle enter/update/exit properly instead of this
-                    d3.select(this).selectAll('div').remove();
+                    const left = scale(v.min);
+                    const width = Math.max(scale(v.max) - left, h);
 
                     d3.select(this).append('div')
                       .style('position', 'relative')
-                      .style('background-color', '#aaa') 
-                      .style('margin-bottom', `2px`)           
+                      .style('background-color', '#ddd')          
                       .style('height', `${ h }px`)
-                      .style('left', `${ left }%`)
                       .style('width', `${ width }%`)
+                      .style('left', `${ left }%`)
+                      .style('border-radius', `${ r }px`);
+                  }
+
+                  if (v !== null && (!v.cluster || v.valid)) {
+                    const h = 5;
+                    const r = h / 2;
+
+                    const left = scale(v.cluster ? v.mean : v);
+
+                    d3.select(this).append('div')
+                      .style('position', 'relative')
+                      .style('background-color', '#bbb') 
+                      .style('margin-top', '-4px')         
+                      .style('margin-bottom', '2px')  
+                      .style('height', `${ h }px`)
+                      .style('width', `${ h }px`)
+                      .style('left', `${ left }%`)
                       .style('border-radius', `${ r }px`);
                   }
 
