@@ -312,6 +312,9 @@ export const digestable = () => {
                     .domain(column.extent)
                     .range([0, 100]);
 
+                  const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                    .domain(column.extent);
+
                   if (v !== null && v.valid) {
                     const h = 3;
                     const r = h / 2;
@@ -329,10 +332,13 @@ export const digestable = () => {
                   }
 
                   if (v !== null && (!v.cluster || v.valid)) {
+                    d3.select(this)
+                      .style('background-color', colorScale(v.cluster ? v.mean : v));
+
                     const h = 5;
                     const r = h / 2;
 
-                    const left = scale(v.cluster ? v.mean : v);
+                    const left = scale(v.cluster ? v.mean : v);                    
 
                     d3.select(this).append('div')
                       .style('position', 'relative')
@@ -343,6 +349,10 @@ export const digestable = () => {
                       .style('width', `${ h }px`)
                       .style('left', `${ left }%`)
                       .style('border-radius', `${ r }px`);
+                  }
+                  else {
+                    d3.select(this)
+                      .style('background-color', null);
                   }
 
                   break;
