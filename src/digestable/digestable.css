@@ -5,7 +5,7 @@ table {
   border-right: 1px solid #ccc;
 }
 
-table thead th { 
+th { 
   position: sticky; 
   top: 0; 
   z-index: 2; 
@@ -18,10 +18,6 @@ th, td {
 
 th { 
   background-color: #eee;
-}
-
-td {
-  color: #666;
 }
 
 th.active {  

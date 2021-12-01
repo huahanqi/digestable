@@ -230,6 +230,7 @@ export const digestable = () => {
     drawBody();
 
     function drawHeader() {
+      // Header elements
       const th = table.select('thead').select('tr').selectAll('th')
         .data(columns, d => d.name)
         .join(
@@ -258,6 +259,7 @@ export const digestable = () => {
         .style('padding-top', py)
         .style('padding-bottom', py);
 
+      // Update button
       th.select('.sortButton')
         .classed('active', d => d.sort !== null)
         .text(d => sortIcon(d.sort));
@@ -290,73 +292,89 @@ export const digestable = () => {
       table.select('tbody').selectAll('tr')
         .data(data)
         .join('tr')
-        .each(function(d) {
+        .each(function(d, i) {
           d3.select(this).selectAll('td')
             .data(columns)
-            .join('td')
+            .join(
+              enter => {
+                const td = enter.append('td');
+
+                td.append('div')
+                  .style('display', 'flex')
+                  .style('flex-direction', 'column')
+                  .style('margin-bottom', '2px')
+                  .append('div');
+
+                return td;
+              }
+            )
             .classed('active', d => d.sort !== null)
             .style('padding-left', px)
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
-            .text(column => text(column, d))
             .each(function(column) {
+              // Get column width
+              if (i === 0) {
+                column.width = d3.select(this).select('div').node().clientWidth;
+              }
+
               const v = d[column.name];
+              
+              const height = 6;
+              const r = height / 2;
+
+              d3.select(this).select('div').select('div').text(column => text(column, d));
 
               switch (column.type) {
-                case 'numeric':
-                  // XXX: Handle enter/update/exit properly instead of this
-                  d3.select(this).selectAll('div').remove();
-
-                  const scale = d3.scaleLinear()
-                    .domain(column.extent)
-                    .range([0, 100]);
-
-                  //const colorScale = d3.scaleSequential(d3.interpolateBlues)
-                  const colorScale = d3.scaleSequential(d3.interpolatePuBuGn)
+                case 'numeric':          
+                  //const colorScale = d3.scaleSequential(d3.interpolateGnBu)
+                  //  .domain(column.extent);                  
+                  //const colorScale = d3.scaleLinear()
+                  //  .domain(column.extent)
+                  //  .range(['#ccebc5', '#084081']);
+                  const colorScale = d3.scaleSequential(d3.interpolatePuOr)
                     .domain(column.extent);
 
-                  if (v !== null && v.valid) {
-                    const h = 3;
-                    const r = h / 2;
+                  const xScale = d3.scaleLinear()
+                    .domain(column.extent)
+                    .range([r, column.width - r]);
 
-                    const left = scale(v.min);
-                    const width = Math.max(scale(v.max) - left, h);
+                  d3.select(this).select('div').selectAll('svg')
+                    .data(v === null || (v.cluster && !v.valid) ? [] : [v])
+                    .join(
+                      enter => {
+                        const svg = enter.append('svg');
 
-                    d3.select(this).append('div')
-                      .style('position', 'relative')
-                      .style('background-color', '#ddd')          
-                      .style('height', `${ h }px`)
-                      .style('width', `${ width }%`)
-                      .style('left', `${ left }%`)
-                      .style('border-radius', `${ r }px`)
-                      .style('background-color', colorScale(v.cluster ? v.mean : v));
-                  }
+                        svg.append('line')
+                          .style('margin', 0)
+                          .style('padding', 0)
+                          .style('stroke-linecap', 'round');
 
-                  if (v !== null && (!v.cluster || v.valid)) {
-                    //d3.select(this)
-                    //  .style('background-color', colorScale(v.cluster ? v.mean : v));
+                        svg.append('circle');                        
 
-                    const h = 7;
-                    const r = h / 2;
+                        return svg;
+                      }
+                    )
+                    .attr('width', column.width)
+                    .attr('height', height)
+                    .each(function(v) {                    
+                      const svg = d3.select(this);
 
-                    const left = scale(v.cluster ? v.mean : v);                    
+                      svg.select('line')
+                          .attr('x1', d => xScale(d.cluster ? d.min : d))
+                          .attr('y1', height / 2)
+                          .attr('x2', d => xScale(d.cluster ? d.max : d))
+                          .attr('y2', height / 2)
+                          .style('stroke', d => colorScale(d.cluster ? d.mean : d))
+                          .style('stroke-width', r / 2);
 
-                    d3.select(this).append('div')
-                      .style('position', 'relative')
-                      .style('background-color', '#bbb') 
-                      .style('margin-top', '-5px')         
-                      .style('margin-bottom', '2px')  
-                      .style('height', `${ h }px`)
-                      .style('width', `${ h }px`)
-                      .style('left', `${ left }%`)
-                      .style('border-radius', `${ r }px`)
-                      .style('background-color', colorScale(v.cluster ? v.mean : v));
-                  }
-                  else {
-                    //d3.select(this)
-                    //  .style('background-color', colorScale(v.cluster ? v.mean : v));
-                  }
+                      svg.select('circle')
+                          .attr('cx', d => xScale(d.cluster ? d.mean : d))
+                          .attr('cy', height / 2)
+                          .attr('r', r)
+                          .style('fill', d => colorScale(d.cluster ? d.mean : d));
+                    });  
 
                   break;
 
