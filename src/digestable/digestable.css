@@ -17,7 +17,11 @@ th, td {
 }
 
 th { 
-  background-color: #eee; 
+  background-color: #eee;
+}
+
+td {
+  color: #666;
 }
 
 th.active {  

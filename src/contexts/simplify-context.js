@@ -6,7 +6,7 @@ const initialState = {
   apply: false,
   methods: methods,
   method: methods[0],
-  amount: 0.8
+  amount: 0.5
 };
 
 const reducer = (state, action) => {

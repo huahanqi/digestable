@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Container, Navbar, Row, Col, Form, Spinner} from 'react-bootstrap';
 import * as d3 from 'd3';
 import { SimplifyProvider } from './contexts';

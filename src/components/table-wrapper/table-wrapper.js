@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { SimplifyContext } from '../../contexts';
 import { digestable } from '../../digestable';
 
-export const TableWrapper = ({ data, onLoaded }) => {
+export const TableWrapper = ({ data }) => {
   const [{ apply, method, amount }] = useContext(SimplifyContext);
   const divRef = useRef();
   const digestableRef = useRef();
@@ -23,9 +23,7 @@ export const TableWrapper = ({ data, onLoaded }) => {
     d3.select(divRef.current)
       .datum(data)
       .call(digestableRef.current);
-
-    //onLoaded();
-  }, [data, onLoaded]);
+  }, [data]);
 
   // Update parameters
   useEffect(() => {

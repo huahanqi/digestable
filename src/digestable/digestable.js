@@ -312,7 +312,8 @@ export const digestable = () => {
                     .domain(column.extent)
                     .range([0, 100]);
 
-                  const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                  //const colorScale = d3.scaleSequential(d3.interpolateBlues)
+                  const colorScale = d3.scaleSequential(d3.interpolatePuBuGn)
                     .domain(column.extent);
 
                   if (v !== null && v.valid) {
@@ -328,14 +329,15 @@ export const digestable = () => {
                       .style('height', `${ h }px`)
                       .style('width', `${ width }%`)
                       .style('left', `${ left }%`)
-                      .style('border-radius', `${ r }px`);
+                      .style('border-radius', `${ r }px`)
+                      .style('background-color', colorScale(v.cluster ? v.mean : v));
                   }
 
                   if (v !== null && (!v.cluster || v.valid)) {
-                    d3.select(this)
-                      .style('background-color', colorScale(v.cluster ? v.mean : v));
+                    //d3.select(this)
+                    //  .style('background-color', colorScale(v.cluster ? v.mean : v));
 
-                    const h = 5;
+                    const h = 7;
                     const r = h / 2;
 
                     const left = scale(v.cluster ? v.mean : v);                    
@@ -343,16 +345,17 @@ export const digestable = () => {
                     d3.select(this).append('div')
                       .style('position', 'relative')
                       .style('background-color', '#bbb') 
-                      .style('margin-top', '-4px')         
+                      .style('margin-top', '-5px')         
                       .style('margin-bottom', '2px')  
                       .style('height', `${ h }px`)
                       .style('width', `${ h }px`)
                       .style('left', `${ left }%`)
-                      .style('border-radius', `${ r }px`);
+                      .style('border-radius', `${ r }px`)
+                      .style('background-color', colorScale(v.cluster ? v.mean : v));
                   }
                   else {
-                    d3.select(this)
-                      .style('background-color', null);
+                    //d3.select(this)
+                    //  .style('background-color', colorScale(v.cluster ? v.mean : v));
                   }
 
                   break;
