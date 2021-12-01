@@ -13,18 +13,19 @@ th {
 
 th, td { 
   border: 1px solid #ccc; 
+  background: #fff;
   white-space: nowrap;
 }
 
 th { 
-  background-color: #eee;
+  background-color: hsl(0, 0%, 93%);
 }
 
 th.active {  
   left: 0;  
   right: 0;
   z-index: 3;
-  background-color:  #d4f7f7;
+  background: hsl(180, 70%, 75%);
 }
 
 td.active {
@@ -32,12 +33,20 @@ td.active {
   left: 0; 
   right: 0;
   z-index: 1; 
-  background-color: #f5ffff;
 }
 
 th > div {
   display: flex;
   justify-content: space-between;
+}
+
+th .highlight {
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: calc(100% + 2px);
+  border: 2px solid hsl(180, 50%, 55%);
+  pointer-events: none;
 }
 
 .sortButton {

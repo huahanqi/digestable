@@ -228,6 +228,7 @@ export const digestable = () => {
 
     drawHeader();
     drawBody();
+    highlight();
 
     function drawHeader() {
       // Header elements
@@ -249,6 +250,9 @@ export const digestable = () => {
                 processData();
                 drawTable()
               });
+
+            th.append('div')
+              .attr('class', 'highlight');
 
             return th;
           }
@@ -333,8 +337,11 @@ export const digestable = () => {
                   //const colorScale = d3.scaleLinear()
                   //  .domain(column.extent)
                   //  .range(['#ccebc5', '#084081']);
-                  const colorScale = d3.scaleSequential(d3.interpolatePuOr)
-                    .domain(column.extent);
+                  //const colorScale = d3.scaleSequential(d3.interpolatePuOr)
+                  //  .domain(column.extent);
+                  const colorScale = d3.scaleLinear()
+                      .domain([column.extent[0], (column.extent[0] + column.extent[1]) / 2, column.extent[1]])
+                      .range(['#2171b5', '#999', "#cb181d"]);
 
                   const xScale = d3.scaleLinear()
                     .domain(column.extent)
@@ -387,6 +394,15 @@ export const digestable = () => {
               }
             })        
         })          
+    }
+
+    function highlight() {
+      // Update border
+      const height = table.node() ? table.node().clientHeight : 0;
+
+      table.selectAll('th').select('.highlight')
+          .style('height', `${ height }px`)
+          .style('visibility', d => d.sort === null ? 'hidden' : null);
     }
   } 
 
