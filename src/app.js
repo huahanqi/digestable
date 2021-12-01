@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Container, Navbar, Row, Col, Form } from 'react-bootstrap';
+import { useState, useCallback } from 'react';
+import { Container, Navbar, Row, Col, Form, Spinner} from 'react-bootstrap';
 import * as d3 from 'd3';
 import { SimplifyProvider } from './contexts';
 import { TableWrapper } from './components/table-wrapper';
@@ -10,15 +10,17 @@ const { Control } = Form;
 
 export const App = () => {
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // XXX: Add loading spinner
 
   const onFileSelect = async evt => {
-    setData(null);
-
     const file = evt.target.files.length === 1 ? evt.target.files[0] : null;
 
     if (!file) return;
+
+    setData(null);
+    setLoading(true);
 
     const url = URL.createObjectURL(file);
 
@@ -26,6 +28,7 @@ export const App = () => {
       const csvData = await d3.csv(url);
 
       setData(csvData);
+      setLoading(false);
     }
     catch (error) {
       console.log(error);
@@ -66,7 +69,12 @@ export const App = () => {
       :
         <Container>
           <div className='m-4 text-center'>
-            <h3>No data</h3>
+            { loading ? 
+              <>
+                <h5>Loading...</h5>
+                <Spinner animation='border' />
+              </>
+            : <h3>No data</h3> }
           </div>
         </Container>
       }

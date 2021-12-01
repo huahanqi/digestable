@@ -24,7 +24,7 @@ th.active {
   left: 0;  
   right: 0;
   z-index: 3;
-  background-color:  hsl(180, 70%, 90%);
+  background-color:  #d4f7f7;
 }
 
 td.active {
@@ -32,7 +32,7 @@ td.active {
   left: 0; 
   right: 0;
   z-index: 1; 
-  background-color: hsl(180, 100%, 98%);
+  background-color: #f5ffff;
 }
 
 th > div {
