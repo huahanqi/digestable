@@ -392,13 +392,27 @@ export const digestable = () => {
                 default:
                   console.log(`Unknown column type ${ column.stype }`);
               }
-            })        
-        })          
+            })
+            .on('mouseover', function(evt, column) {
+              table.selectAll('th').filter(d => d === column).select('.highlight')
+                .style('visibility', null);    
+
+              table.selectAll('td').filter(d => d === column || d.sort !== null)
+                .classed('highlight', true);
+            })
+            .on('mouseout', function(evt, column) {
+              table.selectAll('th').filter(d => d === column).select('.highlight')
+                .style('visibility', d => d.sort === null ? 'hidden' : null); 
+                
+              table.selectAll('td').filter(d => d === column || d.sort !== null)
+                .classed('highlight', false);
+            });
+        });     
     }
 
     function highlight() {
       // Update border
-      const height = table.node() ? table.node().clientHeight : 0;
+      const height = table.node() ? table.node().clientHeight - 1: 0;
 
       table.selectAll('th').select('.highlight')
           .style('height', `${ height }px`)

@@ -1,31 +1,31 @@
 table { 
   border-collapse: separate; 
   border-spacing: 0px;
-  border-left: 1px solid #ccc;
-  border-right: 1px solid #ccc;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
 }
 
 th { 
   position: sticky; 
   top: 0; 
   z-index: 2; 
+  background-color: #eee;
 }
 
 th, td { 
-  border: 1px solid #ccc; 
-  background: #fff;
+  border: 1px solid #ddd;
   white-space: nowrap;
 }
 
-th { 
-  background-color: hsl(0, 0%, 93%);
+td {
+  background: #fff;
 }
 
 th.active {  
   left: 0;  
   right: 0;
   z-index: 3;
-  background: hsl(180, 70%, 75%);
+  background: #e6c0b0 ;
 }
 
 td.active {
@@ -42,11 +42,19 @@ th > div {
 
 th .highlight {
   position: absolute;
-  top: -1px;
-  left: -1px;
-  width: calc(100% + 2px);
-  border: 2px solid hsl(180, 50%, 55%);
+  top: 0px;
+  left: 0px;
+  width: 100%;
   pointer-events: none;
+  box-shadow: 0px 0px 8px #999;
+}
+
+td {
+  color: #fff;
+}
+
+td.highlight {
+  color: #999;
 }
 
 .sortButton {
