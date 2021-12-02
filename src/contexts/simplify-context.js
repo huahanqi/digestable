@@ -11,7 +11,7 @@ const initialState = {
   method: methods[0],
   amount: 0.5,
   unique: 0,
-  rows: 5 
+  rows: 10 
 };
 
 const reducer = (state, action) => {

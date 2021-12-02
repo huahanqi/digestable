@@ -170,7 +170,9 @@ export const digestable = () => {
                       validValues: validValues,
                       min: d3.min(validValues),
                       max: d3.max(validValues),                    
-                      mean: d3.mean(validValues)
+                      median: d3.median(validValues),
+                      q1: d3.quantile(validValues, 0.25),
+                      q2: d3.quantile(validValues, 0.75)
                     } :
                     {
                       cluster: true,
@@ -303,10 +305,10 @@ export const digestable = () => {
             if (v !== null && v.cluster && v.valid) {
               const min = numberFormat(v.min);
               const max = numberFormat(v.max);
-              const mean = numberFormat(v.mean);
+              const median = numberFormat(v.median);
 
-              return min === max ? mean :
-                `<div class='range'><div class='extrema'>${ min }</div><div>${ mean }</div><div class='extrema'>${ v.max }<div>`;
+              return min === max ? median :
+                `<div class='range'><div class='extrema'>${ min }</div><div>${ median }</div><div class='extrema'>${ max }<div>`;
             }
             else {
               return v === null || v.cluster ? '' : numberFormat(v);
@@ -359,7 +361,10 @@ export const digestable = () => {
               const v = d[column.name];
               
               const height = 6;
+              const y = height / 2;
               const r = height / 2;
+              const w1 = r;
+              const w2 = Math.max(Math.floor(w1 / 2), 1);
 
               d3.select(this).select('div').select('div').html(column => text(column, d));
 
@@ -382,38 +387,63 @@ export const digestable = () => {
 
                   d3.select(this).select('div').selectAll('svg')
                     .data(v === null || (v.cluster && !v.valid) ? [] : [v])
-                    .join(
-                      enter => {
-                        const svg = enter.append('svg');
-
-                        svg.append('line')
-                          .style('margin', 0)
-                          .style('padding', 0)
-                          .style('stroke-linecap', 'round');
-
-                        svg.append('circle');                        
-
-                        return svg;
-                      }
-                    )
+                    .join('svg')
                     .attr('width', column.width)
                     .attr('height', height)
                     .each(function(v) {                    
                       const svg = d3.select(this);
 
-                      svg.select('line')
-                          .attr('x1', d => xScale(d.cluster ? d.min : d))
+                      // Quartile line
+                      svg.selectAll('line')
+                        .data(v.cluster ? [[v.min, v.max, v.median], [v.q1, v.q2, v.median]] : [])
+                        .join(
+                          enter => enter.append('line')
+                            .style('margin', 0)
+                            .style('padding', 0)
+                            .style('stroke-linecap', 'round')                         
+                        )
+                        .attr('x1', d => xScale(d[0]))
+                        .attr('y1', y)
+                        .attr('x2', d => xScale(d[1]))
+                        .attr('y2', y)
+                        .style('stroke', d => colorScale(d[2]))
+                        .style('stroke-width', (d, i) => i === 0 ? w2 : w1);
+
+                      // Median
+                      svg.selectAll('circle')
+                        .data(v.cluster ? [v.median] : [v])
+                        .join('circle')
+                        .attr('cx', d => xScale(d))
+                        .attr('cy', y)
+                        .attr('r', r)
+                        .style('fill', d => colorScale(d));
+
+                      /* 
+                        // Quartile line
+                        svg.selectAll('line')
+                          .data(v.cluster ? [v] : [])
+                          .join(
+                            enter => enter.append('line')
+                              .style('margin', 0)
+                              .style('padding', 0)
+                              .style('stroke-linecap', 'round')                            
+                          )
+                          .attr('x1', d => xScale(d.q1))
                           .attr('y1', height / 2)
-                          .attr('x2', d => xScale(d.cluster ? d.max : d))
+                          .attr('x2', d => xScale(d.q2))
                           .attr('y2', height / 2)
-                          .style('stroke', d => colorScale(d.cluster ? d.mean : d))
+                          .style('stroke', d => colorScale(d.median))
                           .style('stroke-width', r / 2);
 
-                      svg.select('circle')
-                          .attr('cx', d => xScale(d.cluster ? d.mean : d))
+                        // Median, min, max
+                        svg.selectAll('circle')
+                          .data(v.cluster ? [v.median, v.min, v.max] : [v])
+                          .join('circle')
+                          .attr('cx', d => xScale(d))
                           .attr('cy', height / 2)
-                          .attr('r', r)
-                          .style('fill', d => colorScale(d.cluster ? d.mean : d));
+                          .attr('r', (d, i) => i === 0 ? r : r / 2)
+                          .style('fill', colorScale(v.cluster ? v.median : v));
+                      */
                     });  
 
                   break;
@@ -456,8 +486,10 @@ export const digestable = () => {
   digestable.applySimplification = function(_) {
     if (!arguments.length) return applySimplification;
     applySimplification = _;
-    processData();
-    drawTable();
+    if (columns.find(({ sort }) => sort !== null)) {
+      processData();
+      drawTable();
+    }
     return digestable;
   };
 
