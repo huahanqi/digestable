@@ -19,7 +19,11 @@ export const TableWrapper = ({ data }) => {
         .simplificationRows(rows)
         .visualizationMode(mode)
         .on('sortByColumn', column => {
-          simplifyDispatch({ type: 'setUnique', unique: column.uniqueValues.length });
+          simplifyDispatch({ 
+            type: 'setColumnInfo', 
+            columnType: column.type, 
+            unique: column.uniqueValues.length 
+          });
         });
     }
   }, []);

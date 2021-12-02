@@ -148,75 +148,70 @@ export const digestable = () => {
   function processData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    if (applySimplification && sortColumn) {
+    if (applySimplification && sortColumn && sortColumn.type !== 'id') {
       const { name, type, sort } = sortColumn;
 
-      switch (type) {
-        case 'numeric': {
-          const values = allData.map(d => d[name]);
+      const values = allData.map(d => d[name]);
 
-          const clusters = clusterNumeric(values, sort);
+      const clusters = type === 'numeric' ? clusterNumeric(values, sort) :
+        clusterCategorical(values);
 
-          data = clusters.map(cluster => {
-            const row = {};
+      data = clusters.map(cluster => {
+        const row = {};
 
-            columns.forEach(({ name, type }) => {
-              if (type === 'numeric') {
-                const values = cluster.map(i => allData[i][name]);
+        columns.forEach(({ name, type }) => {
+          if (type === 'numeric') {
+            const values = cluster.map(i => allData[i][name]);
 
-                if (values.length > 1) {
-                  const validValues = values.filter(d => d !== null);
+            if (values.length > 1) {
+              const validValues = values.filter(d => d !== null);
 
-                  row[name] = validValues.length > 0 ?
-                    {
-                      cluster: true,
-                      valid: true,
-                      values: values,
-                      validValues: validValues,
-                      min: d3.min(validValues),
-                      max: d3.max(validValues),                    
-                      median: d3.median(validValues),
-                      q1: d3.quantile(validValues, 0.25),
-                      q2: d3.quantile(validValues, 0.75)
-                    } :
-                    {
-                      cluster: true,
-                      valid: false,
-                      values: values
-                    };
-                }
-                else if (values.length === 1) {
-                  row[name] = values[0];
-                }
-                else {
-                  row[name] = null;
-                }
-              }
-              else {
-                const values = cluster.map(i => allData[i][name]);
-                const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
+              row[name] = validValues.length > 0 ?
+                {
+                  cluster: true,
+                  valid: true,
+                  values: values,
+                  validValues: validValues,
+                  min: d3.min(validValues),
+                  max: d3.max(validValues),                    
+                  median: d3.median(validValues),
+                  q1: d3.quantile(validValues, 0.25),
+                  q2: d3.quantile(validValues, 0.75)
+                } :
+                {
+                  cluster: true,
+                  valid: false,
+                  values: values
+                };
+            }
+            else if (values.length === 1) {
+              row[name] = values[0];
+            }
+            else {
+              row[name] = null;
+            }
+          }
+          else {
+            const values = cluster.map(i => allData[i][name]);
+            const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
 
-                if (uniqueValues.length > 1) {
-                  row[name] = `${ values[0] } and ${ uniqueValues.length - 1} others`;
-                }
-                else if (uniqueValues.length === 1) {
-                  row[name] = values[0];
-                }
-                else {
-                  row[name] = null;
-                }
-              }
-            });
+            if (uniqueValues.length > 2) {
+              row[name] = `${ values[0] } and ${ uniqueValues.length - 1} others`;
+            }
+            else if (uniqueValues.length === 2) {
+              row[name] = `${ values[0] } and 1 other`;
+            }
+            else if (uniqueValues.length === 1) {
+              row[name] = values[0];
+            }
+            else {
+              row[name] = null;
+            }
+          }
+        });
 
-            return row;
-          });
-
-          break;
-        }
-
-        default:
-          data = [...allData];
-      } 
+        return row;
+      });
     }
     else {
       data = [...allData];
@@ -239,6 +234,24 @@ export const digestable = () => {
           return d3.range(allData.length);
         }
       }
+    }
+
+    function clusterCategorical(values) {
+      return values.reduce((clusters, value, i, a) => {
+        if (i === 0) {
+          clusters.push([i]);
+        }
+        else {
+          if (value === a[i - 1]) {
+            clusters[clusters.length -1].push(i);
+          }
+          else {
+            clusters.push([i]);
+          }
+        }
+
+        return clusters;
+      }, []);
     }
   }
 

@@ -7,6 +7,7 @@ const methods = [
 
 const initialState = {
   apply: false,
+  columnType: 'numeric',
   methods: methods,
   method: methods[0],
   amount: 0.5,
@@ -34,9 +35,10 @@ const reducer = (state, action) => {
         amount: action.amount
       };
 
-    case 'setUnique': 
+    case 'setColumnInfo': 
       return {
         ...state,
+        columnType: action.columnType,
         unique: action.unique,
         rows: Math.min(state.rows, action.unique)
       }

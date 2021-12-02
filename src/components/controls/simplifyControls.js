@@ -6,7 +6,10 @@ import { ControlPanel } from './controlPanel';
 const { Group, Label, Check, Select, Range, Control } = Form;
 
 export const SimplifyControls = () => {
-  const [{ apply, methods, method, amount, unique, rows }, simplifyDispatch] = useContext(SimplifyContext);
+  const [
+    { apply, columnType, methods, method, amount, unique, rows }, 
+    simplifyDispatch
+  ] = useContext(SimplifyContext);
 
   const onApplyChange = evt => {
     simplifyDispatch({ type: 'setApply', apply: evt.target.checked });
@@ -33,6 +36,7 @@ export const SimplifyControls = () => {
           id='apply-simplification-checkbox'              
           size='sm'
           checked={ apply }
+          disabled={ columnType === 'id' }
           onChange={ onApplyChange }
         />
       </Group>
@@ -40,6 +44,7 @@ export const SimplifyControls = () => {
         <FloatingLabel label="Method">
           <Select 
             value={ method.name }
+            disabled={ columnType !== 'numeric' }
             onChange={ onMethodChange }
           >
             { methods.map(({ name }, i) => (
@@ -62,6 +67,7 @@ export const SimplifyControls = () => {
             max={ 100 }
             step={ 0 }
             value={ amount * 100 }
+            disabled={ columnType !== 'numeric' }
             onChange={ onAmountChange }
           />        
         </Group>
@@ -74,6 +80,7 @@ export const SimplifyControls = () => {
             max={ unique }
             step={ 1 }
             value={ rows }
+            disabled={ columnType !== 'numeric' }
             onChange={ onRowsChange }
           />        
         </Group>
