@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Container, Navbar, Row, Col, Form, Spinner} from 'react-bootstrap';
+import { Container, Navbar, Row, Col, Form, Spinner, Stack } from 'react-bootstrap';
 import * as d3 from 'd3';
-import { SimplifyProvider } from './contexts';
+import { SimplifyProvider, VisualizationProvider } from './contexts';
 import { TableWrapper } from './components/table-wrapper';
-import { SimplifyControls } from './components/simplifyControls';
+import { SimplifyControls, VisualizationControls } from './components/controls';
 
 const { Brand } = Navbar;
 const { Control } = Form;
@@ -37,6 +37,7 @@ export const App = () => {
 
   return (
     <SimplifyProvider>
+    <VisualizationProvider>
       <Navbar bg='dark' variant='dark'>
         <Brand className='ms-2'>
           <img 
@@ -62,7 +63,10 @@ export const App = () => {
               <TableWrapper data={ data } />
             </Col>
             <Col className='bg-dark'>
-              <SimplifyControls />
+              <Stack gap={ 3 }>
+                <SimplifyControls />
+                <VisualizationControls />
+              </Stack>
             </Col>
           </Row>
         </Container>
@@ -78,6 +82,7 @@ export const App = () => {
           </div>
         </Container>
       }
+    </VisualizationProvider>
     </SimplifyProvider>
   );
 };

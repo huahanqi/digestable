@@ -1,10 +1,11 @@
 import { useContext, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
-import { SimplifyContext } from '../../contexts';
+import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
   const [{ apply, method, amount, rows }, simplifyDispatch] = useContext(SimplifyContext);
+  const [{ mode }] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -16,6 +17,7 @@ export const TableWrapper = ({ data }) => {
         .simplificationMethod(method.name)      
         .simplificationAmount(amount)
         .simplificationRows(rows)
+        .visualizationMode(mode)
         .on('sortByColumn', column => {
           simplifyDispatch({ type: 'setUnique', unique: column.uniqueValues.length });
         });
@@ -29,7 +31,7 @@ export const TableWrapper = ({ data }) => {
       .call(digestableRef.current);
   }, [data]);
 
-  // Update parameters
+  // Simplify parameters
   useEffect(() => {
     if (digestableRef.current) {
       digestableRef.current.applySimplification(apply);
@@ -53,6 +55,13 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.simplificationRows(rows);
     }
   }, [rows]);
+
+  // Visualization parameters
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.visualizationMode(mode);
+    }
+  }, [mode]);
 
   return (
     <div 

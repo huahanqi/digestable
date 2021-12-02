@@ -49,13 +49,8 @@ th .highlight {
   box-shadow: 0px 0px 8px #999;
 }
 
-td .numericText {
+td .textDiv {
   color: #666;
-  visibility: hidden;
-}
-
-td .numericText.show {
-  visibility: visible;
 }
 
 .sortButton {

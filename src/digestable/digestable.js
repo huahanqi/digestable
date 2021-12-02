@@ -19,6 +19,7 @@ export const digestable = () => {
       simplificationMethod = 'threshold',
       simplificationAmount = 0.9,
       simplificationRows = 20,
+      visualizationMode = 'text',
 
       paddingX = 5,
       paddingY = 0,
@@ -49,6 +50,10 @@ export const digestable = () => {
       drawTable();
     });
   }
+
+  // Helper functions 
+  const textVisibility = () => (visualizationMode === 'text' || visualizationMode === 'both') ? 'visible' : 'hidden';
+  const visVisibility = () => visualizationMode !== 'text' ? 'visible' : 'hidden';
 
   function clearSorting() {    
     // XXX: Could just use find?  
@@ -220,8 +225,6 @@ export const digestable = () => {
     function clusterNumeric(values, sort) {
       switch (simplificationMethod) {
         case 'kmeans': { 
-          console.log(simplificationRows);
-
           const { clusters } = kmeans(values.map(v => [v]), simplificationRows);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
@@ -251,6 +254,7 @@ export const digestable = () => {
 
     drawHeader();
     drawBody();
+    applyVisualizationMode();
     highlight();
 
     function drawHeader() {
@@ -341,7 +345,7 @@ export const digestable = () => {
                   .style('flex-direction', 'column')
                   .style('margin-bottom', '2px')
                   .append('div')
-                  .classed('numericText', d => d.type === 'numeric')
+                  .classed('textDiv', d => d.type === 'numeric')
                   .style('text-align', d => d.type === 'numeric' ? 'center' : 'left');
 
                 return td;
@@ -370,13 +374,6 @@ export const digestable = () => {
 
               switch (column.type) {
                 case 'numeric':          
-                  //const colorScale = d3.scaleSequential(d3.interpolateGnBu)
-                  //  .domain(column.extent);                  
-                  //const colorScale = d3.scaleLinear()
-                  //  .domain(column.extent)
-                  //  .range(['#ccebc5', '#084081']);
-                  //const colorScale = d3.scaleSequential(d3.interpolatePuOr)
-                  //  .domain(column.extent);
                   const colorScale = d3.scaleLinear()
                       .domain([column.extent[0], (column.extent[0] + column.extent[1]) / 2, column.extent[1]])
                       .range(['#2171b5', '#999', '#cb181d']);
@@ -417,33 +414,6 @@ export const digestable = () => {
                         .attr('cy', y)
                         .attr('r', r)
                         .style('fill', d => colorScale(d));
-
-                      /* 
-                        // Quartile line
-                        svg.selectAll('line')
-                          .data(v.cluster ? [v] : [])
-                          .join(
-                            enter => enter.append('line')
-                              .style('margin', 0)
-                              .style('padding', 0)
-                              .style('stroke-linecap', 'round')                            
-                          )
-                          .attr('x1', d => xScale(d.q1))
-                          .attr('y1', height / 2)
-                          .attr('x2', d => xScale(d.q2))
-                          .attr('y2', height / 2)
-                          .style('stroke', d => colorScale(d.median))
-                          .style('stroke-width', r / 2);
-
-                        // Median, min, max
-                        svg.selectAll('circle')
-                          .data(v.cluster ? [v.median, v.min, v.max] : [v])
-                          .join('circle')
-                          .attr('cx', d => xScale(d))
-                          .attr('cy', height / 2)
-                          .attr('r', (d, i) => i === 0 ? r : r / 2)
-                          .style('fill', colorScale(v.cluster ? v.median : v));
-                      */
                     });  
 
                   break;
@@ -460,15 +430,19 @@ export const digestable = () => {
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', null);    
 
-              table.selectAll('td').filter(d => d === column || d.sort !== null).select('.numericText')
-                .classed('show', true);
+              if (visualizationMode === 'interactive') {
+                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv')
+                  .style('visibility', 'visible');
+              }
             })
             .on('mouseout', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
-              table.selectAll('td').filter(d => d === column || d.sort !== null).select('.numericText')
-                .classed('show', false);
+              if (visualizationMode === 'interactive') {
+                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv')
+                .style('visibility', 'hidden');
+              }
             });
         });     
     }
@@ -478,9 +452,15 @@ export const digestable = () => {
       const height = table.node() ? table.node().clientHeight - 1: 0;
 
       table.selectAll('th').select('.highlight')
-          .style('height', `${ height }px`)
-          .style('visibility', d => d.sort === null ? 'hidden' : null);
+        .style('height', `${ height }px`)
+        .style('visibility', d => d.sort === null ? 'hidden' : null);
     }
+  } 
+
+  function applyVisualizationMode() {
+    const td = table.selectAll('td');
+    td.select('.textDiv').style('visibility', textVisibility());
+    td.select('svg').style('visibility', visVisibility());
   } 
 
   digestable.applySimplification = function(_) {
@@ -520,6 +500,13 @@ export const digestable = () => {
       processData();
       drawTable();
     }
+    return digestable;
+  };
+
+  digestable.visualizationMode = function(_) {
+    if (!arguments.length) return visualizationMode;
+    visualizationMode = _;
+    applyVisualizationMode();
     return digestable;
   };
 
