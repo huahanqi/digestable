@@ -1,38 +1,54 @@
-import React, { createContext, useReducer } from "react";
+import React, { createContext, useReducer } from 'react';
 
-const methods = ['threshold', 'kmeans'];
+const methods = [
+  { name: 'threshold', type: 'amount' },
+  { name: 'kmeans', type: 'rows' }
+];
 
 const initialState = {
   apply: false,
   methods: methods,
   method: methods[0],
-  amount: 0.5
+  amount: 0.5,
+  unique: 0,
+  rows: 5 
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "setApply": 
+    case 'setApply': 
       return {
         ...state,
         apply: action.apply
       };
 
-    case "setMethod": {
+    case 'setMethod':
       return {
         ...state,
         method: action.method
       };
-    }
 
-    case "setAmount": {
+    case 'setAmount':
       return {
         ...state,
         amount: action.amount
       };
-    }
+
+    case 'setUnique': 
+      return {
+        ...state,
+        unique: action.unique,
+        rows: Math.min(state.rows, action.unique)
+      }
+
+    case 'setRows':
+      return {
+        ...state,
+        rows: action.rows
+      }
 
     default: 
-      throw new Error("Invalid simplify context action: " + action.type);
+      throw new Error('Invalid simplify context action: ' + action.type);
   }
 }
 

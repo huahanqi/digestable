@@ -6,17 +6,25 @@ import './digestable.css';
 const initialIndex = '__i__';
 
 export const digestable = () => {
-  let table = d3.select(),        
+      // The table
+  let table = d3.select(),     
+
+      // Data   
       allData = [],
       data = [],
       columns = [],
       
       // Parameters
       applySimplification = false,
-      simplificationAmount = 0.9,
       simplificationMethod = 'threshold',
+      simplificationAmount = 0.9,
+      simplificationRows = 20,
+
       paddingX = 5,
-      paddingY = 0;
+      paddingY = 0,
+
+      // Event dispatcher
+      dispatcher = d3.dispatch('sortByColumn');
 
   function digestable(selection) {
     selection.each(function(d) {
@@ -50,12 +58,14 @@ export const digestable = () => {
   function createColumns(inputData) {
     columns = inputData.columns.map(d => ({ name: d }));
 
-    // Determine column types
+    // Determine column types and set column info
     columns.forEach(column => {
       const { name } = column;
-      const values = Array.from(inputData.reduce((values, d) => values.add(d[name]), new Set()));
-      const validValues = values.filter(value => value !== '');
+      const uniqueValues = Array.from(inputData.reduce((values, d) => values.add(d[name]), new Set()));
+      const validValues = uniqueValues.filter(value => value !== '');
       const numeric = validValues.reduce((numeric, value) => numeric && !isNaN(value), true);
+
+      column.uniqueValues = uniqueValues;
 
       if (numeric) {        
         const numbers = validValues.map(d => +d);
@@ -76,7 +86,7 @@ export const digestable = () => {
           column.extent = d3.extent(numbers);
         }
       }
-      else if (values.length === inputData.length) {
+      else if (uniqueValues.length === inputData.length) {
         column.type = 'id';
       }
       else {
@@ -177,10 +187,7 @@ export const digestable = () => {
               }
               else {
                 const values = cluster.map(i => allData[i][name]);
-                const uniqueValues = Array.from(values.reduce((values, value) => {
-                  values.add(value);
-                  return values;
-                }, new Set()));
+                const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
 
                 if (uniqueValues.length > 1) {
                   row[name] = `${ values[0] } and ${ uniqueValues.length - 1} others`;
@@ -211,12 +218,9 @@ export const digestable = () => {
     function clusterNumeric(values, sort) {
       switch (simplificationMethod) {
         case 'kmeans': { 
-          const uniqueValues = Array.from(values.reduce((values, value) => {
-            values.add(value);
-            return values;
-          }, new Set()));
-          const k = Math.floor(d3.interpolateNumber(uniqueValues.length, 1)(simplificationAmount));
-          const { clusters } = kmeans(values.map(v => [v]), k);
+          console.log(simplificationRows);
+
+          const { clusters } = kmeans(values.map(v => [v]), simplificationRows);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
           return clusters.map(cluster => cluster.indeces);
@@ -265,7 +269,9 @@ export const digestable = () => {
               .on('click', (evt, d) => {
                 sortByColumn(d);
                 processData();
-                drawTable()
+                drawTable();
+
+                dispatcher.call('sortByColumn', this, d);
               });
 
             th.append('div')
@@ -368,7 +374,7 @@ export const digestable = () => {
                   //  .domain(column.extent);
                   const colorScale = d3.scaleLinear()
                       .domain([column.extent[0], (column.extent[0] + column.extent[1]) / 2, column.extent[1]])
-                      .range(['#2171b5', '#999', "#cb181d"]);
+                      .range(['#2171b5', '#999', '#cb181d']);
 
                   const xScale = d3.scaleLinear()
                     .domain(column.extent)
@@ -458,17 +464,37 @@ export const digestable = () => {
   digestable.simplificationMethod = function(_) {
     if (!arguments.length) return simplificationMethod;
     simplificationMethod = _;
-    processData();
-    drawTable();
+    if (applySimplification) {
+      processData();
+      drawTable();
+    }
     return digestable;
   };
 
   digestable.simplificationAmount = function(_) {
     if (!arguments.length) return simplificationAmount;
     simplificationAmount = _;
-    processData();
-    drawTable();
+    if (applySimplification) {
+      processData();
+      drawTable();
+    }
     return digestable;
+  };
+
+  digestable.simplificationRows = function(_) {
+    if (!arguments.length) return simplificationRows;
+    simplificationRows = _;
+    if (applySimplification) {
+      processData();
+      drawTable();
+    }
+    return digestable;
+  };
+
+  // For registering event callbacks
+  digestable.on = function() {
+    const value = dispatcher.on.apply(dispatcher, arguments);
+    return value === dispatcher ? digestable : value;
   };
 
   return digestable;
