@@ -176,7 +176,21 @@ export const digestable = () => {
                 }
               }
               else {
-                row[name] = '?';
+                const values = cluster.map(i => allData[i][name]);
+                const uniqueValues = Array.from(values.reduce((values, value) => {
+                  values.add(value);
+                  return values;
+                }, new Set()));
+
+                if (uniqueValues.length > 1) {
+                  row[name] = `${ values[0] } and ${ uniqueValues.length - 1} others`;
+                }
+                else if (uniqueValues.length === 1) {
+                  row[name] = values[0];
+                }
+                else {
+                  row[name] = null;
+                }
               }
             });
 
@@ -196,9 +210,12 @@ export const digestable = () => {
 
     function clusterNumeric(values, sort) {
       switch (simplificationMethod) {
-        case 'kmeans': {
-          const k = Math.floor(d3.interpolateNumber(values.length, 1)(simplificationAmount));
-          //const k = 20;
+        case 'kmeans': { 
+          const uniqueValues = Array.from(values.reduce((values, value) => {
+            values.add(value);
+            return values;
+          }, new Set()));
+          const k = Math.floor(d3.interpolateNumber(uniqueValues.length, 1)(simplificationAmount));
           const { clusters } = kmeans(values.map(v => [v]), k);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
@@ -276,11 +293,19 @@ export const digestable = () => {
         const v = d[name];
 
         switch (type) {
-          case 'numeric':
-            return v === null ? '' :
-              v.cluster && v.valid ? `${ numberFormat(v.min) }–${ numberFormat(v.max) }` :
-              v.cluster ? '' :
-              numberFormat(v);
+          case 'numeric': {
+            if (v !== null && v.cluster && v.valid) {
+              const min = numberFormat(v.min);
+              const max = numberFormat(v.max);
+              const mean = numberFormat(v.mean);
+
+              return min === max ? mean :
+                `<div class='range'><div class='extrema'>${ min }</div><div>${ mean }</div><div class='extrema'>${ v.max }<div>`;
+            }
+            else {
+              return v === null || v.cluster ? '' : numberFormat(v);
+            }
+          }
 
           case 'id':
           case 'categorical':
@@ -307,7 +332,9 @@ export const digestable = () => {
                   .style('display', 'flex')
                   .style('flex-direction', 'column')
                   .style('margin-bottom', '2px')
-                  .append('div');
+                  .append('div')
+                  .classed('numericText', d => d.type === 'numeric')
+                  .style('text-align', d => d.type === 'numeric' ? 'center' : 'left');
 
                 return td;
               }
@@ -328,7 +355,7 @@ export const digestable = () => {
               const height = 6;
               const r = height / 2;
 
-              d3.select(this).select('div').select('div').text(column => text(column, d));
+              d3.select(this).select('div').select('div').html(column => text(column, d));
 
               switch (column.type) {
                 case 'numeric':          
@@ -397,15 +424,15 @@ export const digestable = () => {
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', null);    
 
-              table.selectAll('td').filter(d => d === column || d.sort !== null)
-                .classed('highlight', true);
+              table.selectAll('td').filter(d => d === column || d.sort !== null).select('.numericText')
+                .classed('show', true);
             })
             .on('mouseout', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
-              table.selectAll('td').filter(d => d === column || d.sort !== null)
-                .classed('highlight', false);
+              table.selectAll('td').filter(d => d === column || d.sort !== null).select('.numericText')
+                .classed('show', false);
             });
         });     
     }
