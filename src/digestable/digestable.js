@@ -55,6 +55,14 @@ export const digestable = () => {
   const textVisibility = () => (visualizationMode === 'text' || visualizationMode === 'both') ? 'visible' : 'hidden';
   const visVisibility = () => visualizationMode !== 'text' ? 'visible' : 'hidden';
 
+  const getCounts = (uniqueValues, values) => Object.entries(values.reduce((counts, value) => {
+    counts[value]++;
+    return counts;
+  }, uniqueValues.reduce((counts, value) => {
+    counts[value] = 0;
+    return counts;
+  }, {}))).map(([key, value]) => ({ value: key, count: value })).sort((a, b) => d3.descending(a.count, b.count));
+
   function clearSorting() {    
     // XXX: Could just use find?  
     columns.forEach(d => d.sort = null);
@@ -66,7 +74,8 @@ export const digestable = () => {
     // Determine column types and set column info
     columns.forEach(column => {
       const { name } = column;
-      const uniqueValues = Array.from(inputData.reduce((values, d) => values.add(d[name]), new Set()));
+      const values = inputData.map(d => d[name]);
+      const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
       const validValues = uniqueValues.filter(value => value !== '');
       const numeric = validValues.reduce((numeric, value) => numeric && !isNaN(value), true);
 
@@ -96,6 +105,7 @@ export const digestable = () => {
       }
       else {
         column.type = 'categorical';
+        column.counts = getCounts(uniqueValues, values);
       }
     });
 
@@ -148,6 +158,9 @@ export const digestable = () => {
   function processData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
+    // Initialize categorical and id column counts
+    columns.filter(({ type }) => type !== 'numeric').forEach(column => column.maxCount = 1);
+
     if (applySimplification && sortColumn && sortColumn.type !== 'id') {
       const { name, type, sort } = sortColumn;
 
@@ -159,7 +172,9 @@ export const digestable = () => {
       data = clusters.map(cluster => {
         const row = {};
 
-        columns.forEach(({ name, type, uniqueValues }) => {
+        columns.forEach(column => {
+          const { name, type, uniqueValues } = column;
+
           if (type === 'numeric') {
             const values = cluster.map(i => allData[i][name]);
 
@@ -195,14 +210,9 @@ export const digestable = () => {
             const values = cluster.map(i => allData[i][name]);
 
             if (values.length > 1) {
-              // Get category counts
-              const counts = Object.entries(values.reduce((counts, value) => {
-                counts[value]++;
-                return counts;
-              }, uniqueValues.reduce((counts, value) => {
-                counts[value] = 0;
-                return counts;
-              }, {}))).map(([key, value]) => ({ value: key, count: value })).sort((a, b) => d3.descending(a.count, b.count));
+              const counts = getCounts(uniqueValues, values);
+              
+              column.maxCount = Math.max(column.maxCount, counts[0].count);
 
               row[name] = {
                 cluster: true,
@@ -210,6 +220,8 @@ export const digestable = () => {
               };
             }
             else if (values.length === 1) {
+              column.maxCount = Math.max(column.maxCount, 1);
+
               row[name] = values[0];
             }
             else {
@@ -495,9 +507,9 @@ export const digestable = () => {
                         .range([0, column.width]);
 
                       const yScale = d3.scaleLinear()
-                        .domain([0, counts[0].count])
+                        .domain([0, column.maxCount])
                         .range([height, 0]);
-
+                        
                       // Bars
                       svg.selectAll('rect')
                         .data(counts)
