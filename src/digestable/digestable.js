@@ -350,7 +350,7 @@ export const digestable = () => {
               const topString = `<div>${ top.value }` +
                 (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
 
-              const othersString = others === 1 ? `<div class='others'>and 1 other categories</div>` :
+              const othersString = others === 1 ? `<div class='others'>and 1 other category</div>` :
                 others > 1 ? `<div class='others'>and ${ others } other categories</div>` : '';
 
               return `<div class='categories'>${ topString }${othersString}</div>`;
@@ -501,12 +501,19 @@ export const digestable = () => {
                       // Bars
                       svg.selectAll('rect')
                         .data(counts)
-                        .join('rect')
+                        .join(
+                          enter => {
+                            const rect = enter.append('rect');
+                            rect.append('title');
+                            return rect;
+                          }
+                        )
                         .attr('x', d => xScale(d.value))
                         .attr('y', d => yScale(d.count))
                         .attr('width', xScale.bandwidth())
                         .attr('height', d => yScale(0) - yScale(d.count))
-                        .attr('fill', d => colorScale(d.value));
+                        .attr('fill', d => colorScale(d.value))
+                        .select('title').text(d => `${ d.value }: ${ d.count }`);
                     });                  
 
                   break;
