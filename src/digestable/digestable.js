@@ -159,7 +159,7 @@ export const digestable = () => {
       data = clusters.map(cluster => {
         const row = {};
 
-        columns.forEach(({ name, type }) => {
+        columns.forEach(({ name, type, uniqueValues }) => {
           if (type === 'numeric') {
             const values = cluster.map(i => allData[i][name]);
 
@@ -193,15 +193,23 @@ export const digestable = () => {
           }
           else {
             const values = cluster.map(i => allData[i][name]);
-            const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
 
-            if (uniqueValues.length > 2) {
-              row[name] = `${ values[0] } and ${ uniqueValues.length - 1} others`;
+            if (values.length > 1) {
+              // Get category counts
+              const counts = Object.entries(values.reduce((counts, value) => {
+                counts[value]++;
+                return counts;
+              }, uniqueValues.reduce((counts, value) => {
+                counts[value] = 0;
+                return counts;
+              }, {}))).map(([key, value]) => ({ value: key, count: value })).sort((a, b) => d3.descending(a.count, b.count));
+
+              row[name] = {
+                cluster: true,
+                counts: counts
+              };
             }
-            else if (uniqueValues.length === 2) {
-              row[name] = `${ values[0] } and 1 other`;
-            }
-            else if (uniqueValues.length === 1) {
+            else if (values.length === 1) {
               row[name] = values[0];
             }
             else {
@@ -320,6 +328,7 @@ export const digestable = () => {
         switch (type) {
           case 'numeric': {
             if (v !== null && v.cluster && v.valid) {
+              // Display range and median for clusters
               const min = numberFormat(v.min);
               const max = numberFormat(v.max);
               const median = numberFormat(v.median);
@@ -331,12 +340,42 @@ export const digestable = () => {
               return v === null || v.cluster ? '' : numberFormat(v);
             }
           }
+          
+          case 'categorical':
+            if (v !== null && v.cluster) {
+              // Display top category and number of other categories
+              const top = v.counts[0];
+              const others = v.counts.filter(d => d.count > 0).length - 1;
+
+              const topString = `<div>${ top.value }` +
+                (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
+
+              const othersString = others === 1 ? `<div class='others'>and 1 other categories</div>` :
+                others > 1 ? `<div class='others'>and ${ others } other categories</div>` : '';
+
+              return `<div class='categories'>${ topString }${othersString}</div>`;
+            }
+            else {
+              return v === null ? '' : v;
+            }
 
           case 'id':
-          case 'categorical':
-            return v === null ? '' :
-              v.cluster ? '?' :
-              v;
+            if (v !== null && v.cluster) {
+              // Display first id and number of other ids
+              const top = v.counts[0];
+              const others = v.counts.filter(d => d.count > 0).length - 1;
+
+              const topString = `<div>${ top.value }` +
+                (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
+
+              const othersString = others === 1 ? `<div class='others'>and 1 other</div>` :
+                others > 1 ? `<div class='others'>and ${ others } others</div>` : '';
+
+                return `<div class='categories'>${ topString }${othersString}</div>`;
+            }
+            else {
+              return v === null ? '' : v;
+            }
 
           default:
             return null;
@@ -358,7 +397,7 @@ export const digestable = () => {
                   .style('flex-direction', 'column')
                   .style('margin-bottom', '2px')
                   .append('div')
-                  .classed('textDiv', d => d.type === 'numeric')
+                  .classed('textDiv', d => d.type !== 'id')
                   .style('text-align', d => d.type === 'numeric' ? 'center' : 'left');
 
                 return td;
@@ -376,25 +415,13 @@ export const digestable = () => {
               }
 
               const v = d[column.name];
-              
-              const height = 6;
-              const y = height / 2;
-              const r = height / 2;
-              const w1 = r;
-              const w2 = Math.max(Math.floor(w1 / 2), 1);
+
+              const height = 10;
 
               d3.select(this).select('div').select('div').html(column => text(column, d));
 
               switch (column.type) {
-                case 'numeric':          
-                  const colorScale = d3.scaleLinear()
-                      .domain([column.extent[0], (column.extent[0] + column.extent[1]) / 2, column.extent[1]])
-                      .range(['#2171b5', '#999', '#cb181d']);
-
-                  const xScale = d3.scaleLinear()
-                    .domain(column.extent)
-                    .range([r, column.width - r]);
-
+                case 'numeric': {
                   d3.select(this).select('div').selectAll('svg')
                     .data(v === null || (v.cluster && !v.valid) ? [] : [v])
                     .join('svg')
@@ -402,6 +429,20 @@ export const digestable = () => {
                     .attr('height', height)
                     .each(function(v) {                    
                       const svg = d3.select(this);
+
+                      const height = 6;
+                      const y = height / 2;
+                      const r = height / 2;
+                      const w1 = r;
+                      const w2 = Math.max(Math.floor(w1 / 2), 1);
+    
+                      const colorScale = d3.scaleLinear()
+                          .domain([column.extent[0], (column.extent[0] + column.extent[1]) / 2, column.extent[1]])
+                          .range(['#2171b5', '#999', '#cb181d']);
+    
+                      const xScale = d3.scaleLinear()
+                        .domain(column.extent)
+                        .range([r, column.width - r]);
 
                       // Quartile line
                       svg.selectAll('line')
@@ -430,9 +471,48 @@ export const digestable = () => {
                     });  
 
                   break;
+                }
 
+                case 'categorical': {
+                  d3.select(this).select('div').selectAll('svg')
+                    .data(v === null ? [] : [v])
+                    .join('svg')
+                    .attr('width', column.width)
+                    .attr('height', height)
+                    .each(function(v) {  
+                      const svg = d3.select(this);
+
+                      const height = 10;
+
+                      const counts = v.counts ? v.counts : [{ value: v, count : 1 }];
+
+                      const colorScale = d3.scaleOrdinal()
+                          .domain(column.uniqueValues)
+                          .range(d3.schemeTableau10);
+
+                      const xScale = d3.scaleBand()
+                        .domain(column.uniqueValues)
+                        .range([0, column.width]);
+
+                      const yScale = d3.scaleLinear()
+                        .domain([0, counts[0].count])
+                        .range([height, 0]);
+
+                      // Bars
+                      svg.selectAll('rect')
+                        .data(counts)
+                        .join('rect')
+                        .attr('x', d => xScale(d.value))
+                        .attr('y', d => yScale(d.count))
+                        .attr('width', xScale.bandwidth())
+                        .attr('height', d => yScale(0) - yScale(d.count))
+                        .attr('fill', d => colorScale(d.value));
+                    });                  
+
+                  break;
+                }
+                
                 case 'id':
-                case 'categorical':
                   break;
 
                 default:

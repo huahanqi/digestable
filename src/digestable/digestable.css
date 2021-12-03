@@ -78,3 +78,14 @@ td .range .extrema {
   font-size: x-small;
   color: #999;
 }
+
+td .categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0px;
+}
+
+td .categories .others {
+  font-size: x-small;
+  color: #999;
+}

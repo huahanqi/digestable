@@ -1,8 +1,8 @@
 import React, { createContext, useReducer } from 'react';
 
 const methods = [
-  { name: 'threshold', type: 'amount' },
-  { name: 'kmeans', type: 'rows' }
+  { name: 'kmeans', type: 'rows' },
+  { name: 'threshold', type: 'amount' }
 ];
 
 const initialState = {
