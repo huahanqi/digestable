@@ -1,6 +1,7 @@
 import React, { createContext, useReducer } from 'react';
 
 const methods = [
+  { name: 'quantiles', type: 'rows' },
   { name: 'kmeans', type: 'rows' },
   { name: 'threshold', type: 'amount' }
 ];

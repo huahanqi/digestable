@@ -1,4 +1,5 @@
 import * as d3 from 'd3';
+import clusterQuantiles from './clustering/clusterQuantiles';
 import kmeans from './clustering/kmeans';
 import clusterThreshold from './clustering/clusterThreshold';
 import groupCategories from './clustering/groupCategories';
@@ -240,8 +241,14 @@ export const digestable = () => {
 
     function clusterNumeric(values, sort) {
       switch (simplificationMethod) {
+        case 'quantiles': {
+          const clusters = clusterQuantiles(values, simplificationRows);
+          if (sort === 'descending') clusters.reverse();
+          return clusters;
+        }
+
         case 'kmeans': { 
-          const { clusters } = kmeans(values.map(v => [v]), simplificationRows);
+          const { clusters } = kmeans(values.map(d => [d]), simplificationRows);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
           return clusters.map(cluster => cluster.indeces);
