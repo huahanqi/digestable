@@ -145,16 +145,13 @@ export const digestable = () => {
   function sortData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    if (sortColumn) {
-      const { name, sort } = sortColumn;
+    const { name, sort } = sortColumn ? sortColumn : { name: initialIndex, sort: 'ascending' };
 
-      const sortValue = value => value === null ? Number.NEGATIVE_INFINITY : value;
-
-      allData.sort((a, b) => d3[sort](sortValue(a[name]), sortValue(b[name])));
-    }
-    else {
-      allData.sort((a, b) => d3.ascending(a[initialIndex], b[initialIndex]));
-    }
+    allData.sort((a, b) => {
+      const v1 = a[name];
+      const v2 = b[name];
+      return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+    });
   }
 
   function processData() {
@@ -240,27 +237,42 @@ export const digestable = () => {
     }
 
     function clusterNumeric(values, sort) {
+      const removeNull = values => {
+        // Find first null. Always sorted to the end.
+        const nullIndex = values.indexOf(null);      
+        const nullCluster = nullIndex > -1 ? d3.range(nullIndex, values.length) : null;
+        const validValues = nullIndex > -1 ? values.slice(0, nullIndex) : values;
+        const rows = nullCluster ? simplificationRows - 1 : simplificationRows;
+
+        return [validValues, nullCluster, rows];
+      }
+
+      const applyNull = (clusters, nullCluster) => {
+        return nullCluster ? clusters.concat([nullCluster]) : clusters;
+      };
+
       switch (simplificationMethod) {
         case 'quantiles': {
-          const clusters = clusterQuantiles(values, simplificationRows);
+          const [validValues, nullCluster, rows] = removeNull(values);
+          const clusters = clusterQuantiles(validValues, rows);
           if (sort === 'descending') clusters.reverse();
-          return clusters;
+
+          return applyNull(clusters, nullCluster);
         }
 
         case 'kmeans': { 
-          const { clusters } = kmeans(values.map(d => [d]), simplificationRows);
+          const [validValues, nullCluster, rows] = removeNull(values);
+          const { clusters } = kmeans(validValues.map(d => [d]), rows);
           clusters.sort((a, b) => d3[sort](a.centroid[0], b.centroid[0]));
 
-          return clusters.map(cluster => cluster.indeces);
+          return applyNull(clusters.map(cluster => cluster.indeces), nullCluster);
         }
 
-        case 'threshold': {
+        case 'threshold':
           return clusterThreshold(values, simplificationAmount);
-        }
 
-        default: {
-          return d3.range(allData.length);
-        }
+        default:
+          console.log(`Invalid simplificationMethod: ${ simplificationMethod }`);
       }
     }
 
