@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
-import kmeans from './kmeans';
-import clusterThreshold from './clusterThreshold';
+import kmeans from './clustering/kmeans';
+import clusterThreshold from './clustering/clusterThreshold';
+import groupCategories from './clustering/groupCategories';
 import './digestable.css';
 
 const initialIndex = '__i__';
@@ -257,21 +258,7 @@ export const digestable = () => {
     }
 
     function clusterCategorical(values) {
-      return values.reduce((clusters, value, i, a) => {
-        if (i === 0) {
-          clusters.push([i]);
-        }
-        else {
-          if (value === a[i - 1]) {
-            clusters[clusters.length -1].push(i);
-          }
-          else {
-            clusters.push([i]);
-          }
-        }
-
-        return clusters;
-      }, []);
+      return groupCategories(values);
     }
   }
 
@@ -509,7 +496,7 @@ export const digestable = () => {
                       const yScale = d3.scaleLinear()
                         .domain([0, column.maxCount])
                         .range([height, 0]);
-                        
+
                       // Bars
                       svg.selectAll('rect')
                         .data(counts)
