@@ -26,6 +26,10 @@ export const digestable = () => {
       paddingX = 5,
       paddingY = 0,
 
+      // Missing data
+      missingValues = ['', 'NA', 'na'],
+      isMissing = d => missingValues.includes(d),
+
       // Event dispatcher
       dispatcher = d3.dispatch('sortByColumn');
 
@@ -78,7 +82,7 @@ export const digestable = () => {
       const { name } = column;
       const values = inputData.map(d => d[name]);
       const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
-      const validValues = uniqueValues.filter(value => value !== '');
+      const validValues = uniqueValues.filter(value => !isMissing(value));
       const numeric = validValues.reduce((numeric, value) => numeric && !isNaN(value), true);
 
       column.uniqueValues = uniqueValues;
@@ -121,9 +125,17 @@ export const digestable = () => {
       // Store initial order for sorting
       v[initialIndex] = i;
 
-      // Convert numeric
-      columns.filter(({ type }) => type === 'numeric').forEach(({ name }) => {
-        v[name] = v[name] === '' ? null : +v[name];
+      // Convert missing and numeric data
+      columns.forEach(({ type, name }) => {
+        const value = v[name];
+        const missing = isMissing(value);
+
+        if (missing) {
+          v[name] = null;
+        }
+        else if (type === 'numeric') {
+          v[name] = +value;
+        }
       });
 
       return v;
