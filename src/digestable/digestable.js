@@ -177,8 +177,9 @@ export const digestable = () => {
 
       const values = allData.map(d => d[name]);
 
-      const clusters = type === 'numeric' ? clusterNumeric(values, sort) :
-        clusterCategorical(values);
+      const clusters = (type === 'numeric' ? clusterNumeric(values, sort) : clusterCategorical(values))
+        .filter(cluster => cluster.length > 0);
+
 
       data = clusters.map(cluster => {
         const row = {};
