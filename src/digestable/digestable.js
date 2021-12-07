@@ -314,8 +314,8 @@ export const digestable = () => {
     drawHeader();
     drawBody();
     updateSticky();
-    //applyVisualizationMode();
-    //highlight();
+    applyVisualizationMode();
+    highlight();
 
     function drawHeader() {
       // Header elements
@@ -350,10 +350,7 @@ export const digestable = () => {
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
-        .style('padding-bottom', py)
-        .each(d => console.log(d));
-
-       console.log(d3.selectAll('th'))
+        .style('padding-bottom', py);
 
       // Update button
       th.select('.sortButton')
@@ -429,7 +426,7 @@ export const digestable = () => {
         .join('tr')
         .each(function(d, i) {
           d3.select(this).selectAll('td')
-            .data(cols)
+            .data(cols, d => d.name)
             .join(
               enter => {
                 const td = enter.append('td');
@@ -606,8 +603,8 @@ export const digestable = () => {
     function updateSticky() {
       const x = cols[0].type === 'cluster' ? table.selectAll('th').node().offsetWidth : 0;
 
-      table.selectAll('th.active').style('left', d => { console.log(d); return d.type === 'cluster' ? 0 : `${ x }px` });
-      table.selectAll('td.active').style('left', d => { console.log(d); return d.type === 'cluster' ? 0 : `${ x }px` });
+      table.selectAll('th.active').style('left', d => d.type === 'cluster' ? 0 : `${ x }px`);
+      table.selectAll('td.active').style('left', d => d.type === 'cluster' ? 0 : `${ x }px`);
     }
 
     function highlight() {
