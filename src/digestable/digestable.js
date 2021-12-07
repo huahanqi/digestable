@@ -311,6 +311,14 @@ export const digestable = () => {
 
     const sortIndex = applySimplification ? columns.findIndex(({ sort }) => sort !== null) : -1;
 
+    /*
+    table.selectAll('svg').remove();
+    columns.forEach(d => d.width = 0);
+
+    table.selectAll('th').remove();
+    table.selectAll('td').remove();
+    */
+
     drawHeader();
     drawBody();
     updateSticky();
@@ -347,7 +355,7 @@ export const digestable = () => {
           }
         )
         .classed('active', d => d.type === 'cluster' || d.sort !== null)
-        .attr('colspan', (d, i) => i === sortIndex ? 2 : null)
+        //.attr('colspan', (d, i) => i === sortIndex ? 2 : null)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
@@ -428,14 +436,12 @@ export const digestable = () => {
         }
       }
 
-      // Create cluster size column
-      const cols = [...columns];
+      // XXX: Don't need to attach max size to a column, can just be a variable
+      // Store has clusters variable in draw, use where necessary
+      // only show cluster size for current column
+
       if (applySimplification && sortIndex > -1) {
-        cols.splice(sortIndex + 1, 0, { 
-          name: 'cluster info', 
-          type: 'cluster', 
-          maxSize: d3.max(data, d => Object.values(d)[0].size) 
-        });
+        columns[sortIndex].maxSize = Math.max(d3.max(data, d => Object.values(d)[0].size), 1);
       }
 
       table.select('tbody').selectAll('tr')
@@ -443,21 +449,32 @@ export const digestable = () => {
         .join('tr')
         .each(function(d, i) {
           d3.select(this).selectAll('td')
-            .data(cols, d => d.name)
+            .data(columns, d => d.name)
             .join(
               enter => {
                 const td = enter.append('td');
                 
-                const div = td.append('div')  
+                const div = td.append('div') 
+                  .attr('class', 'cellDiv');
+
+                const valueDiv = div.append('div')
                   .attr('class', 'valueDiv');
 
-                div.append('div')
+                valueDiv.append('div')
                   .attr('class', 'textDiv')
                   .classed('notId', d => d.type !== 'id')
-                  .style('text-align', d => d.type === 'numeric' ? 'center' : 'left')
-                  .style('min-width', 10);
+                  .style('text-align', d => d.type === 'numeric' ? 'center' : 'left');
 
-                div.append('div')
+                valueDiv.append('div')
+                  .attr('class', 'visDiv');
+
+                const clusterDiv = div.append('div')
+                  .attr('class', 'clusterDiv');
+
+                clusterDiv.append('div')
+                  .attr('class', 'textDiv notId');
+
+                clusterDiv.append('div')
                   .attr('class', 'visDiv');
 
                 return td;
@@ -468,6 +485,13 @@ export const digestable = () => {
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
+            .each(function(column) {
+              // Text
+              const v = d[column.name];
+
+              d3.select(this).select('.valueDiv .textDiv').html(text(column.type, v));
+              d3.select(this).select('.clusterDiv .textDiv').html(text('cluster', v));
+            })
             .each(function(column) {
               // Get column width
               if (i === 0) {
@@ -481,13 +505,10 @@ export const digestable = () => {
 
               const height = 10;
 
-              // Text
-              d3.select(this).select('.textDiv').html(column => text(column.type, v));
-
               // Visualization
               switch (column.type) {
                 case 'numeric':
-                  d3.select(this).select('.visDiv').selectAll('svg')
+                  d3.select(this).select('.valueDiv .visDiv').selectAll('svg')
                     .data(v === null || (v.cluster && !v.valid) ? [] : [v])
                     .join('svg')
                     .attr('width', column.width)
@@ -538,7 +559,7 @@ export const digestable = () => {
                   break;
 
                 case 'categorical':
-                  d3.select(this).select('.visDiv').selectAll('svg')
+                  d3.select(this).select('.valueDiv .visDiv').selectAll('svg')
                     .data(v === null ? [] : [v])
                     .join('svg')
                     .attr('width', column.width)
@@ -585,37 +606,39 @@ export const digestable = () => {
                 case 'id':
                   break;
 
-                case 'cluster':
-                  d3.select(this).select('.visDiv').selectAll('svg')
-                    .data(v === null ? [] : [v])
-                    .join('svg')
-                    .attr('width', column.width)
-                    .attr('height', height)
-                    .each(function(v) {  
-                      const svg = d3.select(this);
-
-                      const height = 5;
-
-                      const size = v.size ? v.size : 1;
-
-                      const xScale = d3.scaleLinear()
-                        .domain([0, column.maxSize])
-                        .range([0, column.width]);
-
-                      // Bar
-                      svg.selectAll('rect')
-                        .data([v])
-                        .join('rect')
-                        .attr('width', xScale(size))
-                        .attr('height', height)
-                        .attr('fill', '#bbb');
-                    });           
-
-                  break;
-
-                default:
-                  console.log(`Unknown column type ${ column.stype }`);
+                  default:
+                    console.log(`Unknown column type ${ column.stype }`);
               }
+
+              const clusterWidth = 30;
+
+              d3.select(this).select('.clusterDiv .visDiv').selectAll('svg')
+                .data(v === null ? [] : [v])
+                .join('svg')
+                .attr('width', clusterWidth)
+                .attr('height', height)
+                .each(function(v) {  
+                  const svg = d3.select(this);
+
+                  const height = 5;
+
+                  console.log(v);
+                  console.log(column);
+
+                  const size = v.size ? v.size : 1;
+
+                  const xScale = d3.scaleLinear()
+                    .domain([0, column.maxSize])
+                    .range([0, clusterWidth]);
+
+                  // Bar
+                  svg.selectAll('rect')
+                    .data([v])
+                    .join('rect')
+                    .attr('width', xScale(size))
+                    .attr('height', height)
+                    .attr('fill', '#bbb');
+                });           
             })
             .on('mouseover', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
