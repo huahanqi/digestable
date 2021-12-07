@@ -183,6 +183,8 @@ export const digestable = () => {
       data = clusters.map(cluster => {
         const row = {};
 
+        const size = cluster.length;
+
         columns.forEach(column => {
           const { name, type, uniqueValues } = column;
 
@@ -195,6 +197,7 @@ export const digestable = () => {
               row[name] = validValues.length > 0 ?
                 {
                   cluster: true,
+                  size: size,
                   valid: true,
                   values: values,
                   validValues: validValues,
@@ -206,6 +209,7 @@ export const digestable = () => {
                 } :
                 {
                   cluster: true,
+                  size: size,
                   valid: false,
                   values: values
                 };
@@ -227,6 +231,7 @@ export const digestable = () => {
 
               row[name] = {
                 cluster: true,
+                size: size,
                 counts: counts
               };
             }
@@ -303,15 +308,19 @@ export const digestable = () => {
       '↕'
     );
 
+    const cols = applySimplification && columns.find(({ sort }) => sort !== null) ? 
+      [{ name: 'cluster info', type: 'cluster' }, ...columns] : [...columns];
+
     drawHeader();
     drawBody();
-    applyVisualizationMode();
-    highlight();
+    updateSticky();
+    //applyVisualizationMode();
+    //highlight();
 
     function drawHeader() {
       // Header elements
       const th = table.select('thead').select('tr').selectAll('th')
-        .data(columns, d => d.name)
+        .data(cols, d => d.name)
         .join(
           enter => {
             const th = enter.append('th');
@@ -320,7 +329,7 @@ export const digestable = () => {
             
             div.append('div')                
               .text(d => d.name);
-            
+                      
             div.append('button')
               .attr('class', 'sortButton')
               .on('click', (evt, d) => {
@@ -337,11 +346,14 @@ export const digestable = () => {
             return th;
           }
         )
-        .classed('active', d => d.sort !== null)
+        .classed('active', d => d.type === 'cluster' || d.sort !== null)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
-        .style('padding-bottom', py);
+        .style('padding-bottom', py)
+        .each(d => console.log(d));
+
+       console.log(d3.selectAll('th'))
 
       // Update button
       th.select('.sortButton')
@@ -417,18 +429,21 @@ export const digestable = () => {
         .join('tr')
         .each(function(d, i) {
           d3.select(this).selectAll('td')
-            .data(columns)
+            .data(cols)
             .join(
               enter => {
                 const td = enter.append('td');
+                
+                const div = td.append('div')  
+                  .attr('class', 'valueDiv');
 
-                td.append('div')
-                  .style('display', 'flex')
-                  .style('flex-direction', 'column')
-                  .style('margin-bottom', '2px')
-                  .append('div')
-                  .classed('textDiv', d => d.type !== 'id')
+                div.append('div')
+                  .attr('class', 'textDiv')
+                  .classed('notId', d => d.type !== 'id')
                   .style('text-align', d => d.type === 'numeric' ? 'center' : 'left');
+
+                div.append('div')
+                  .attr('class', 'visDiv');
 
                 return td;
               }
@@ -444,15 +459,26 @@ export const digestable = () => {
                 column.width = d3.select(this).select('div').node().clientWidth;
               }
 
+              if (column.type === 'cluster') {
+                const v = Object.values(d)[0];
+                const size = v !== null && v.cluster ? v.size : 1;
+
+                d3.select(this).select('.textDiv').html(`n = ${ size }`);
+
+                return;
+              }
+
               const v = d[column.name];
 
               const height = 10;
 
-              d3.select(this).select('div').select('div').html(column => text(column, d));
+              // Text
+              d3.select(this).select('.textDiv').html(column => text(column, d));
 
+              // Visualization
               switch (column.type) {
                 case 'numeric': {
-                  d3.select(this).select('div').selectAll('svg')
+                  d3.select(this).select('.visDiv').selectAll('svg')
                     .data(v === null || (v.cluster && !v.valid) ? [] : [v])
                     .join('svg')
                     .attr('width', column.width)
@@ -561,7 +587,7 @@ export const digestable = () => {
                 .style('visibility', null);    
 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv')
+                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv.notId')
                   .style('visibility', 'visible');
               }
             })
@@ -570,11 +596,18 @@ export const digestable = () => {
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv')
+                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv.notId')
                 .style('visibility', 'hidden');
               }
             });
         });     
+    }
+
+    function updateSticky() {
+      const x = cols[0].type === 'cluster' ? table.selectAll('th').node().offsetWidth : 0;
+
+      table.selectAll('th.active').style('left', d => { console.log(d); return d.type === 'cluster' ? 0 : `${ x }px` });
+      table.selectAll('td.active').style('left', d => { console.log(d); return d.type === 'cluster' ? 0 : `${ x }px` });
     }
 
     function highlight() {
@@ -589,7 +622,7 @@ export const digestable = () => {
 
   function applyVisualizationMode() {
     const td = table.selectAll('td');
-    td.select('.textDiv').style('visibility', textVisibility());
+    td.select('.textDiv.notId').style('visibility', textVisibility());
     td.select('svg').style('visibility', visVisibility());
   } 
 

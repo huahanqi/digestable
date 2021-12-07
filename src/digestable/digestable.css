@@ -19,11 +19,9 @@ th, td {
 
 td {
   background: #fff;
-  color: #666;
 }
 
 th.active {  
-  left: 0;  
   right: 0;
   z-index: 3;
   background: #bbb ;
@@ -31,7 +29,6 @@ th.active {
 
 td.active {
   position: sticky; 
-  left: 0; 
   right: 0;
   z-index: 1; 
 }
@@ -48,6 +45,16 @@ th .highlight {
   width: 100%;
   pointer-events: none;
   box-shadow: 0px 0px 8px #999;
+}
+
+td .valueDiv {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+td .textDiv {
+  color: #666;
 }
 
 .sortButton {
