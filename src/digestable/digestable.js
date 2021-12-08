@@ -15,6 +15,7 @@ export const digestable = () => {
       allData = [],
       data = [],
       columns = [],
+      clustering = false,
       
       // Parameters
       applySimplification = false,
@@ -172,7 +173,9 @@ export const digestable = () => {
     // Initialize categorical and id column counts
     columns.filter(({ type }) => type !== 'numeric').forEach(column => column.maxCount = 1);
 
-    if (applySimplification && sortColumn && sortColumn.type !== 'id') {
+    clustering = applySimplification && sortColumn && sortColumn.type !== 'id';
+
+    if (clustering) {
       const { name, type, sort } = sortColumn;
 
       const values = allData.map(d => d[name]);
@@ -309,19 +312,11 @@ export const digestable = () => {
       '↕'
     );
 
-    const sortIndex = applySimplification ? columns.findIndex(({ sort }) => sort !== null) : -1;
-
-    /*
-    table.selectAll('svg').remove();
-    columns.forEach(d => d.width = 0);
-
-    table.selectAll('th').remove();
-    table.selectAll('td').remove();
-    */
+    // Ensure columns widths reset properly
+    table.selectAll('th, td').remove();
 
     drawHeader();
     drawBody();
-    updateSticky();
     applyVisualizationMode();
     highlight();
 
@@ -354,8 +349,7 @@ export const digestable = () => {
             return th;
           }
         )
-        .classed('active', d => d.type === 'cluster' || d.sort !== null)
-        //.attr('colspan', (d, i) => i === sortIndex ? 2 : null)
+        .classed('active', d => d.sort !== null)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
@@ -436,13 +430,10 @@ export const digestable = () => {
         }
       }
 
-      // XXX: Don't need to attach max size to a column, can just be a variable
-      // Store has clusters variable in draw, use where necessary
-      // only show cluster size for current column
-
-      if (applySimplification && sortIndex > -1) {
-        columns[sortIndex].maxSize = Math.max(d3.max(data, d => Object.values(d)[0].size), 1);
-      }
+      const maxSize = d3.max(data, d => {
+        const v = Object.values(d)[0];
+        return v.size ? v.size : 1;
+      });
 
       table.select('tbody').selectAll('tr')
         .data(data)
@@ -468,15 +459,6 @@ export const digestable = () => {
                 valueDiv.append('div')
                   .attr('class', 'visDiv');
 
-                const clusterDiv = div.append('div')
-                  .attr('class', 'clusterDiv');
-
-                clusterDiv.append('div')
-                  .attr('class', 'textDiv notId');
-
-                clusterDiv.append('div')
-                  .attr('class', 'visDiv');
-
                 return td;
               }
             )
@@ -490,18 +472,33 @@ export const digestable = () => {
               const v = d[column.name];
 
               d3.select(this).select('.valueDiv .textDiv').html(text(column.type, v));
-              d3.select(this).select('.clusterDiv .textDiv').html(text('cluster', v));
+
+              d3.select(this).select('.cellDiv').selectAll('.clusterDiv')
+                .data(clustering && column.sort !== null ? [v] : [])
+                .join(
+                  enter => {
+                    const div = enter.append('div')
+                      .attr('class', 'clusterDiv');
+
+                    div.append('div')
+                      .attr('class', 'textDiv notId');
+    
+                    div.append('div')
+                      .attr('class', 'visDiv');
+
+                    return div;
+                  }
+                )
+                .select('.textDiv')
+                .html(text('cluster', v));
             })
             .each(function(column) {
               // Get column width
               if (i === 0) {
                 column.width = d3.select(this).select('.valueDiv').node().clientWidth;
-
-                // XXX: Hack. Should be possible with css...
-                if (column.type === 'cluster') column.width = 30;
               }
 
-              const v = column.type === 'cluster' ? Object.values(d)[0] : d[column.name];
+              const v = d[column.name];
 
               const height = 10;
 
@@ -607,13 +604,14 @@ export const digestable = () => {
                   break;
 
                   default:
-                    console.log(`Unknown column type ${ column.stype }`);
+                    console.log(`Unknown column type ${ column.type }`);
               }
 
+              // Cluster size
               const clusterWidth = 30;
 
               d3.select(this).select('.clusterDiv .visDiv').selectAll('svg')
-                .data(v === null ? [] : [v])
+                .data([v])
                 .join('svg')
                 .attr('width', clusterWidth)
                 .attr('height', height)
@@ -622,13 +620,10 @@ export const digestable = () => {
 
                   const height = 5;
 
-                  console.log(v);
-                  console.log(column);
-
-                  const size = v.size ? v.size : 1;
+                  const size = v !== null && v.size ? v.size : 1;
 
                   const xScale = d3.scaleLinear()
-                    .domain([0, column.maxSize])
+                    .domain([0, maxSize])
                     .range([0, clusterWidth]);
 
                   // Bar
@@ -645,7 +640,7 @@ export const digestable = () => {
                 .style('visibility', null);    
 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv.notId')
+                table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
                   .style('visibility', 'visible');
               }
             })
@@ -654,22 +649,11 @@ export const digestable = () => {
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).select('.textDiv.notId')
-                .style('visibility', 'hidden');
+                table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
+                  .style('visibility', 'hidden');
               }
             });
         });     
-    }
-
-    function updateSticky() {
-      const nodes = table.select('tbody').select('tr').selectAll('td').nodes();
-
-      const l = sortIndex > -1 ? nodes[sortIndex].offsetWidth : 0;
-      const r = sortIndex > -1 ? nodes[sortIndex + 1].offsetWidth : 0;
-
-      table.selectAll('th.active').style('left', 0);
-      table.selectAll('td.active').style('left', d => d.type === 'cluster' ? `${ l }px` : 0)
-      table.selectAll('td.active').style('right', d => d.type !== 'cluster' ? `${ r }px` : 0);
     }
 
     function highlight() {
@@ -684,8 +668,8 @@ export const digestable = () => {
 
   function applyVisualizationMode() {
     const td = table.selectAll('td');
-    td.select('.textDiv.notId').style('visibility', textVisibility());
-    td.select('svg').style('visibility', visVisibility());
+    td.selectAll('.textDiv.notId').style('visibility', textVisibility());
+    td.selectAll('svg').style('visibility', visVisibility());
   } 
 
   digestable.applySimplification = function(_) {

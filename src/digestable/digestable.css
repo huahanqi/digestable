@@ -21,7 +21,9 @@ td {
   background: #fff;
 }
 
-th.active {  
+th.active { 
+  position: sticky; 
+  left: 0;
   right: 0;
   z-index: 3;
   background: #bbb ;
@@ -29,8 +31,9 @@ th.active {
 
 td.active {
   position: sticky; 
+  left: 0;
   right: 0;
-  z-index: 1; 
+  z-index: 1;
 }
 
 th > div {
@@ -63,8 +66,8 @@ td .clusterDiv {
   display: flex;
   flex-direction: column;
   border-left: 1px solid #ccc;
-  margin-left: 2px;
-  padding-left: 2px;
+  margin-left: 4px;
+  padding-left: 4px;
 }
 
 td .textDiv {
