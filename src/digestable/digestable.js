@@ -1,4 +1,6 @@
 import * as d3 from 'd3';
+import * as ss from 'simple-statistics';
+import regression from 'regression';
 import clusterQuantiles from './clustering/clusterQuantiles';
 import kmeans from './clustering/kmeans';
 import clusterThreshold from './clustering/clusterThreshold';
@@ -7,14 +9,126 @@ import './digestable.css';
 
 const initialIndex = '__i__';
 
+const getUniqueValues = d => Array.from(d.reduce((values, value) => values.add(value), new Set()));
+
+const correlation = (d1, d2) => {
+  const r = ss.sampleCorrelation(d1, d2);
+
+  return isNaN(r) ? 0 : r;
+};
+
+const categoricalRegression = (categorical, numeric) => {
+  const categories = getUniqueValues(categorical);
+
+  // XXX: What should be returned here?
+  if (categories.length === 1) return 0;
+
+  // n - 1 dummy categories
+  const cats = categories.slice(0, -1);
+
+  // Setup multiple regression
+  // XXX: CHECK THIS
+  const x = numeric.map((value, i) => {
+    return [
+      ...cats.map(category => categorical[i] === category ? 1 : 0),
+      value
+    ];
+  });
+
+  const result = regression.linear(x);
+
+  return Math.sqrt(result.r2);
+};
+
+function chiSquared(dimension1, categories1, dimension2, categories2) {
+  const categoryCounts = (values, categories) => {
+    return values.reduce((counts, value) => {
+      if (!counts[value]) counts[value] = 1;
+      else counts[value]++;
+      return counts;
+    }, {});
+  };
+
+  // Get counts per dimension
+  const counts1 = categoryCounts(dimension1, categories1);
+  const counts2 = categoryCounts(dimension2, categories2);
+
+  // Initialize object for value counts
+  const counts = categories1.reduce((counts, c1) => {
+    counts[c1] = {};
+
+    categories2.forEach(c2 => {
+      counts[c1][c2] = 0;
+    });
+
+    return counts;
+  }, {});
+
+  // Get counts
+  dimension1.forEach((v1, i) => {
+    const v2 = dimension2[i];
+
+    counts[v1][v2]++;
+  });
+
+  console.log(counts);
+
+  // Get expected and observed values
+  const n = dimension1.length;
+  const observed = [];
+  const expected = [];
+
+  categories1.forEach(c1 => {
+    categories2.forEach(c2 => {
+      observed.push(counts[c1][c2]);
+      expected.push(counts1[c1] * counts2[c2] /  n);
+    });
+  });
+
+  // Compute chi squared
+  return ss.sumSimple(observed.map((o, i) => {
+    const e = expected[i];
+
+    return Math.pow(o - e, 2) / e;
+  }));
+}
+
+const cramersV = (dimension1, dimension2) => {
+  const categories1 = getUniqueValues(dimension1);
+  const categories2 = getUniqueValues(dimension2);
+
+  // XXX: What should be returned here?
+  if (categories1.length === 1 || categories2.length === 1) return 0;
+
+  const chi2 = chiSquared(dimension1, categories1, dimension2, categories2);
+
+  const n = dimension1.length;
+  const k1 = categories1.length;
+  const k2 = categories2.length;
+  const k = Math.min(k1, k2);
+
+  if (k1 === 2 && k2 === 2) {
+    // Use phi
+//    console.log("Phi: ", Math.sqrt(chi2 / n));
+    return Math.sqrt(chi2 / n);
+  }
+  else {
+    // Use Cramers V
+//    console.log("V: ", Math.sqrt(chi2 / (n * (k - 1))));
+    return Math.sqrt(chi2 / (n * (k - 1)));
+  }
+};
+
 export const digestable = () => {
       // The table
-  let table = d3.select(),     
+  let table = d3.select(),   
+      linkSvg = d3.select(),  
 
       // Data   
       allData = [],
       data = [],
       columns = [],
+      relations = [],
       clustering = false,
       
       // Parameters
@@ -36,6 +150,11 @@ export const digestable = () => {
 
   function digestable(selection) {
     selection.each(function(d) {
+      // Create SVG for links
+      linkSvg = d3.select(this).selectAll('.linkSvg')
+        .data([[]])
+        .join(enter => enter.append('svg').attr('class', 'linkSvg'));
+
       // Create skeletal table
       table = d3.select(this).selectAll('table')
         .data([[]])
@@ -141,6 +260,33 @@ export const digestable = () => {
 
       return v;
     });
+
+    // Compute relations
+    relations = columns.reduce((relations, column1, i, a) => {
+      const v1 = allData.map(d => d[column1.name]);
+
+      for (let j = i + 1; j < a.length; j++) {
+        const column2 = a[j];
+        const v2 = allData.map(d => d[column2.name]);
+
+        const value = column1.type === 'id' || column2.type === 'id' ? 0 :
+          column1.type === 'categorical' && column2.type === 'categorical' ? cramersV(v1, v2) :
+          column1.type === 'categorical' ? categoricalRegression(v1, v2) :
+          column2.type === 'categorical' ? categoricalRegression(v2, v1) :
+          correlation(v1, v2);
+
+        relations.push({
+          source: column1,
+          target: column2,
+          value: value,
+          magnitude: Math.abs(value)
+        });
+      }
+
+      return relations;
+    }, []);
+
+    relations.sort((a, b) => d3.ascending(a.magnitude, b.magnitude));
   }
 
   function sortByColumn(column) {    
@@ -313,12 +459,13 @@ export const digestable = () => {
     );
 
     // Ensure columns widths reset properly
-    table.selectAll('th, td').remove();
+    table.selectAll('th, td, svg').remove();
 
     drawHeader();
     drawBody();
     applyVisualizationMode();
     highlight();
+    drawLinks();
 
     function drawHeader() {
       // Header elements
@@ -663,6 +810,69 @@ export const digestable = () => {
       table.selectAll('th').select('.highlight')
         .style('height', `${ height }px`)
         .style('visibility', d => d.sort === null ? 'hidden' : null);
+    }
+
+    function drawLinks() {
+      if (!table.node()) return;
+
+      const width = table.node().offsetWidth;
+      const height = 200;
+      const aspect = width / height;
+
+      const offset = table.node().getBoundingClientRect().x;
+
+      table.selectAll('th').nodes().forEach((d, i) => {
+        const { left, right } = d.getBoundingClientRect();
+
+        columns[i].pos = left + (right - left) / 2 - offset;
+      });
+
+      relations.forEach(d => {
+        const x1 = d.source.pos;
+        const x2 = d.target.pos;
+  
+        const y = height - (x2 - x1) / aspect;
+  
+        const xi = d3.interpolateNumber(x1, x2);
+        const yi = d3.interpolateNumber(height, y);
+
+        d.points = [
+          { x: xi(0), y: yi(0) },
+          { x: xi(0.1), y: yi(0.5) },
+          { x: xi(0.5), y: yi(1) },
+          { x: xi(0.9), y: yi(0.5) },
+          { x: xi(1), y: yi(0) }
+        ];
+      });
+
+      const line = d3.line()
+        .x(d => d.x)
+        .y(d => d.y)
+        .curve(d3.curveBasis);
+
+      const colorScale = d3.scaleSequential(d3.interpolateRdBu)
+        .domain([1, -1]);
+
+      const opacityScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range([0, 1]);
+
+      const widthScale = d3.scaleLinear()
+        .domain([0, 1])
+        .range([0, 5]);
+
+      linkSvg
+        .attr('width', width)
+        .attr('height', height)
+        .selectAll('path')
+        .data(relations)
+        .join('path')
+        .attr('d', d => line(d.points))
+        .style('fill', 'none')
+        .style('stroke', d => colorScale(d.value))
+        .style('stroke-opacity', d => opacityScale(d.magnitude) )
+        .style('stroke-width', d => widthScale(d.magnitude))
+        .style('stroke-linecap', 'round');
     }
   } 
 
