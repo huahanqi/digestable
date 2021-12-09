@@ -677,6 +677,9 @@ export const digestable = () => {
                 table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
                   .style('visibility', 'visible');
               }
+
+              linkSvg.selectAll('path')
+                .style('visibility', d => d.source === column || d.target === column ? null : 'hidden');
             })
             .on('mouseout', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
@@ -686,6 +689,9 @@ export const digestable = () => {
                 table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
                   .style('visibility', 'hidden');
               }
+
+              linkSvg.selectAll('path')
+                .style('visibility', null);
             });
         });     
     }
@@ -698,73 +704,73 @@ export const digestable = () => {
         .style('height', `${ height }px`)
         .style('visibility', d => d.sort === null ? 'hidden' : null);
     }
-
-    function drawLinks() {
-      if (!table.node()) return;
-
-      linkSvg.style('display', showLinks ? null : 'none');
-      if (!showLinks) return;
-
-      const width = table.node().offsetWidth;
-      const height = 200;
-      const aspect = width / height;
-
-      const offset = table.node().getBoundingClientRect().x;
-
-      table.selectAll('th').nodes().forEach((d, i) => {
-        const { left, right } = d.getBoundingClientRect();
-
-        columns[i].pos = left + (right - left) / 2 - offset;
-      });
-
-      relations.forEach(d => {
-        const x1 = d.source.pos;
-        const x2 = d.target.pos;
-  
-        const y = height - (x2 - x1) / aspect;
-  
-        const xi = d3.interpolateNumber(x1, x2);
-        const yi = d3.interpolateNumber(height, y);
-
-        d.points = [
-          { x: xi(0), y: yi(0) },
-          { x: xi(0.1), y: yi(0.5) },
-          { x: xi(0.5), y: yi(1) },
-          { x: xi(0.9), y: yi(0.5) },
-          { x: xi(1), y: yi(0) }
-        ];
-      });
-
-      const line = d3.line()
-        .x(d => d.x)
-        .y(d => d.y)
-        .curve(d3.curveBasis);
-
-      const colorScale = d3.scaleSequential(d3.interpolateRdBu)
-        .domain([1, -1]);
-
-      const opacityScale = d3.scaleLinear()
-        .domain([0, 1])
-        .range([0, 1]);
-
-      const widthScale = d3.scaleLinear()
-        .domain([0, 1])
-        .range([0, 5]);
-
-      linkSvg
-        .attr('width', width)
-        .attr('height', height)
-        .selectAll('path')
-        .data(relations)
-        .join('path')
-        .attr('d', d => line(d.points))
-        .style('fill', 'none')
-        .style('stroke', d => colorScale(d.value))
-        .style('stroke-opacity', d => opacityScale(d.magnitude) )
-        .style('stroke-width', d => widthScale(d.magnitude))
-        .style('stroke-linecap', 'round');
-    }
   } 
+
+  function drawLinks() {
+    if (!table.node()) return;
+
+    linkSvg.style('display', showLinks ? null : 'none');
+    if (!showLinks) return;
+
+    const width = table.node().offsetWidth;
+    const height = 200;
+    const aspect = width / height;
+
+    const offset = table.node().getBoundingClientRect().x;
+
+    table.selectAll('th').nodes().forEach((d, i) => {
+      const { left, right } = d.getBoundingClientRect();
+
+      columns[i].pos = left + (right - left) / 2 - offset;
+    });
+
+    relations.forEach(d => {
+      const x1 = d.source.pos;
+      const x2 = d.target.pos;
+
+      const y = height - (x2 - x1) / aspect;
+
+      const xi = d3.interpolateNumber(x1, x2);
+      const yi = d3.interpolateNumber(height, y);
+
+      d.points = [
+        { x: xi(0), y: yi(0) },
+        { x: xi(0.1), y: yi(0.5) },
+        { x: xi(0.5), y: yi(1) },
+        { x: xi(0.9), y: yi(0.5) },
+        { x: xi(1), y: yi(0) }
+      ];
+    });
+
+    const line = d3.line()
+      .x(d => d.x)
+      .y(d => d.y)
+      .curve(d3.curveBasis);
+
+    const colorScale = d3.scaleSequential(d3.interpolateRdBu)
+      .domain([1, -1]);
+
+    const opacityScale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([0, 1]);
+
+    const widthScale = d3.scaleLinear()
+      .domain([0, 1])
+      .range([0, 5]);
+
+    linkSvg
+      .attr('width', width)
+      .attr('height', height)
+      .selectAll('path')
+      .data(relations)
+      .join('path')
+      .attr('d', d => line(d.points))
+      .style('fill', 'none')
+      .style('stroke', d => colorScale(d.value))
+      .style('stroke-opacity', d => opacityScale(d.magnitude) )
+      .style('stroke-width', d => widthScale(d.magnitude))
+      .style('stroke-linecap', 'round');
+  }
 
   function applyVisualizationMode() {
     const td = table.selectAll('td');
@@ -823,6 +829,11 @@ export const digestable = () => {
     if (!arguments.length) return showLinks;
     showLinks = _;
     drawTable();
+    return digestable;
+  };
+
+  digestable.updateLinks = function() {
+    drawLinks();
     return digestable;
   };
 

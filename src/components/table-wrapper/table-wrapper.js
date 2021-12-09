@@ -1,6 +1,7 @@
 import { useContext, useRef, useEffect } from 'react';
 import * as d3 from 'd3';
 import { SimplifyContext, VisualizationContext } from '../../contexts';
+import { useScrollHook } from '../../hooks';
 import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
@@ -8,6 +9,13 @@ export const TableWrapper = ({ data }) => {
   const [{ mode, showLinks }] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
+
+  // Scroll callback
+  const onScroll = useScrollHook(() => {
+    if (digestableRef.current) {
+      digestableRef.current.updateLinks();
+    }
+  }, divRef, 'horizontal');
 
   // Create visualization
   useEffect(() => {
@@ -80,6 +88,7 @@ export const TableWrapper = ({ data }) => {
         height: '100%',
         overflow: 'auto'
       }}
+      onScroll={ onScroll }
     />
   );
 };           
