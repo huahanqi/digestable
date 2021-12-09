@@ -425,8 +425,8 @@ export const digestable = () => {
               const topString = `<div>${ top.value }` +
                 (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
 
-              const othersString = others.length === 1 ? `<div class='others' title='${ s }'>and 1 other category</div>` :
-                others.length > 1 ? `<div class='others' title='${ s }'>and ${ others.length } other categories</div>` : '';
+              const othersString = others.length === 1 ? `<div class='others' title="${ s }">and 1 other category</div>` :
+                others.length > 1 ? `<div class='others' title="${ s }">and ${ others.length } other categories</div>` : '';
 
               return `<div class='categories'>${ topString }${ othersString }</div>`;
             }
@@ -444,8 +444,8 @@ export const digestable = () => {
 
               const topString = `<div>${ top.value }<div>`;
 
-              const othersString = others.length === 1 ? `<div class='others' title='${ s }'>and 1 other</div>` :
-                others.length > 1 ? `<div class='others' title='${ s }'>and ${ others.length } others</div>` : '';
+              const othersString = others.length === 1 ? `<div class='others' title="${ s }">and 1 other</div>` :
+                others.length > 1 ? `<div class='others' title="${ s }">and ${ others.length } others</div>` : '';
 
               return `<div class='categories'>${ topString }${ othersString }</div>`;
             }
