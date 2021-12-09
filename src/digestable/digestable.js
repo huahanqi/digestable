@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as ss from 'simple-statistics';
-import regression from 'regression';
+import shaman from 'shaman';
 import clusterQuantiles from './clustering/clusterQuantiles';
 import kmeans from './clustering/kmeans';
 import clusterThreshold from './clustering/clusterThreshold';
@@ -27,17 +27,18 @@ const categoricalRegression = (categorical, numeric) => {
   const cats = categories.slice(0, -1);
 
   // Setup multiple regression
-  // XXX: CHECK THIS
-  const x = numeric.map((value, i) => {
-    return [
-      ...cats.map(category => categorical[i] === category ? 1 : 0),
-      value
-    ];
+  const x = categorical.map((value, i) => {
+    return [...cats.map(category => value === category ? 1 : 0)];
   });
 
-  const result = regression.linear(x);
+  const lr = new shaman.LinearRegression(x, numeric, { algorithm: 'GradientDescent' });
 
-  return Math.sqrt(result.r2);
+  const p = [];
+  lr.train(err => {
+    x.forEach(x => p.push(lr.predict(x)));
+  });
+
+  return correlation(numeric, p);
 };
 
 function chiSquared(dimension1, categories1, dimension2, categories2) {

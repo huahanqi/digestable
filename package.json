@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@smockle/regression": "^3.0.4",
     "@testing-library/jest-dom": "^5.15.0",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -11,7 +12,7 @@
     "react-bootstrap": "^2.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
-    "regression": "^2.0.1",
+    "shaman": "^0.3.2",
     "simple-statistics": "^7.7.0",
     "web-vitals": "^1.1.2"
   },
