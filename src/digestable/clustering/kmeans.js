@@ -170,7 +170,7 @@ function recalculateCentroids(dataSet, labels, k) {
   return newCentroidList;
 }
 
-export default function kmeans(dataset, k, useNaiveSharding = true) {
+export function kmeans(dataset, k, useNaiveSharding = true) {
   if (dataset.length && dataset[0].length && dataset.length >= k) {
     // Initialize book keeping variables
     let iterations = 0;

@@ -5,7 +5,7 @@ import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
   const [{ apply, method, amount, rows }, simplifyDispatch] = useContext(SimplifyContext);
-  const [{ mode }] = useContext(VisualizationContext);
+  const [{ mode, showLinks }] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -66,6 +66,12 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.visualizationMode(mode);
     }
   }, [mode]);
+
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.showLinks(showLinks);
+    }
+  }, [showLinks]);
 
   return (
     <div 

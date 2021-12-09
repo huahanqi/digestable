@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export default function clusterQuantiles(values, n) {
+export const clusterQuantiles = (values, n) => {
   const range = d3.range(n);
 
   const scale = d3.scaleQuantile()
@@ -11,4 +11,4 @@ export default function clusterQuantiles(values, n) {
     clusters[scale(value)].push(i);
     return clusters;
   }, range.map(() => []));
-}
+};

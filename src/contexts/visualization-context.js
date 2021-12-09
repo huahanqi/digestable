@@ -9,7 +9,8 @@ const modes = [
 
 const initialState = {
   modes: modes,
-  mode: modes[0]
+  mode: modes[0],
+  showLinks: false
 };
 
 const reducer = (state, action) => {
@@ -19,6 +20,12 @@ const reducer = (state, action) => {
         ...state,
         mode: action.mode
       };
+
+    case 'setShowLinks':
+      return {
+        ...state,
+        showLinks: action.showLinks
+      }
 
     default: 
       throw new Error('Invalid visualization context action: ' + action.type);

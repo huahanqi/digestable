@@ -1,0 +1,1 @@
+export const getUniqueValues = d => Array.from(d.reduce((values, value) => values.add(value), new Set()));

@@ -3,13 +3,17 @@ import { Form, FloatingLabel } from 'react-bootstrap';
 import { VisualizationContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
-const { Group, Select } = Form;
+const { Group, Select, Check } = Form;
 
 export const VisualizationControls = () => {
-  const [{ modes, mode }, visualizationDispatch] = useContext(VisualizationContext);
+  const [{ modes, mode, showLinks }, visualizationDispatch] = useContext(VisualizationContext);
 
   const onModeChange = evt => {
     visualizationDispatch({ type: 'setMode', mode: evt.target.value });
+  };
+
+  const onShowLinksChange = evt => {
+    visualizationDispatch({ type: 'setShowLinks', showLinks: evt.target.checked });
   };
 
   return (
@@ -31,6 +35,16 @@ export const VisualizationControls = () => {
             }
           </Select>
         </FloatingLabel>
+      </Group>
+      <Group>
+        <Check 
+          type='checkbox' 
+          label='Show links'
+          id='show-links-checkbox'              
+          size='sm'
+          checked={ showLinks }
+          onChange={ onShowLinksChange }
+        />
       </Group>
     </ControlPanel>
   );

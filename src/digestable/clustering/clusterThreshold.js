@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export default function clusterThreshold(values, threshold) {
+export const clusterThreshold = (values, threshold) => {
   const diffs = values.filter(d => d !== null).reduce((diffs, value, i, a) => {
     if (i === 0) return [];
     
@@ -38,4 +38,4 @@ export default function clusterThreshold(values, threshold) {
   clusters.reverse();
 
   return clusters;
-}
+};

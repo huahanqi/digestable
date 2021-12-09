@@ -1,4 +1,4 @@
-export default function groupCategories(values) {
+export const groupCategories = values => {
   return values.reduce((clusters, value, i, a) => {
     if (i === 0) {
       clusters.push([i]);
