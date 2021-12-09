@@ -18,7 +18,16 @@ const correlation = (d1, d2) => {
 };
 
 const categoricalRegression = (categorical, numeric) => {
-  const categories = getUniqueValues(categorical);
+  // Remove nulls
+  const [validCat, validNum] = categorical.reduce((nonNull, v, i) => {
+    if (categorical[i] !== null && numeric[i] !== null) {
+      nonNull[0].push(categorical[i]);
+      nonNull[1].push(numeric[i]);
+    }
+    return nonNull;
+  }, [[], []]);
+
+  const categories = getUniqueValues(validCat);
 
   // XXX: What should be returned here?
   if (categories.length === 1) return 0;
@@ -27,18 +36,20 @@ const categoricalRegression = (categorical, numeric) => {
   const cats = categories.slice(0, -1);
 
   // Setup multiple regression
-  const x = categorical.map((value, i) => {
+  const x = validCat.map((value, i) => {
     return [...cats.map(category => value === category ? 1 : 0)];
   });
 
-  const lr = new shaman.LinearRegression(x, numeric, { algorithm: 'GradientDescent' });
+  const lr = new shaman.LinearRegression(x, validNum, { algorithm: 'NormalEquation' });
 
   const p = [];
   lr.train(err => {
+    if (err) console.log(err);
+
     x.forEach(x => p.push(lr.predict(x)));
   });
 
-  return correlation(numeric, p);
+  return correlation(validNum, p);
 };
 
 function chiSquared(dimension1, categories1, dimension2, categories2) {
@@ -71,8 +82,6 @@ function chiSquared(dimension1, categories1, dimension2, categories2) {
 
     counts[v1][v2]++;
   });
-
-  console.log(counts);
 
   // Get expected and observed values
   const n = dimension1.length;
