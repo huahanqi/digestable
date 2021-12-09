@@ -419,15 +419,16 @@ export const digestable = () => {
             if (v !== null && v.cluster) {
               // Display top category and number of other categories
               const top = v.counts[0];
-              const others = v.counts.filter(d => d.count > 0).length - 1;
+              const others = v.counts.slice(1).filter(d => d.count > 0);
+              const s = others.map(d => `${ d.value } (${ d.count })`).join(', ');
 
               const topString = `<div>${ top.value }` +
                 (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
 
-              const othersString = others === 1 ? `<div class='others'>and 1 other category</div>` :
-                others > 1 ? `<div class='others'>and ${ others } other categories</div>` : '';
+              const othersString = others.length === 1 ? `<div class='others' title='${ s }'>and 1 other category</div>` :
+                others.length > 1 ? `<div class='others' title='${ s }'>and ${ others.length } other categories</div>` : '';
 
-              return `<div class='categories'>${ topString }${othersString}</div>`;
+              return `<div class='categories'>${ topString }${ othersString }</div>`;
             }
             else {
               return v === null ? '' : v;
@@ -438,15 +439,15 @@ export const digestable = () => {
             if (v !== null && v.cluster) {
               // Display first id and number of other ids
               const top = v.counts[0];
-              const others = v.counts.filter(d => d.count > 0).length - 1;
+              const others = v.counts.slice(1).filter(d => d.count > 0);
+              const s = others.map(d => d.value).join(', ');
 
-              const topString = `<div>${ top.value }` +
-                (top.count > 1 ? ` (${ top.count })</div>` : '<div>');
+              const topString = `<div>${ top.value }<div>`;
 
-              const othersString = others === 1 ? `<div class='others'>and 1 other</div>` :
-                others > 1 ? `<div class='others'>and ${ others } others</div>` : '';
+              const othersString = others.length === 1 ? `<div class='others' title='${ s }'>and 1 other</div>` :
+                others.length > 1 ? `<div class='others' title='${ s }'>and ${ others.length } others</div>` : '';
 
-                return `<div class='categories'>${ topString }${othersString}</div>`;
+              return `<div class='categories'>${ topString }${ othersString }</div>`;
             }
             else {
               return v === null ? '' : v;
