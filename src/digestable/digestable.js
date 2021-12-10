@@ -164,7 +164,9 @@ export const digestable = () => {
 
       return v;
     });
+  }
 
+  function computeRelations() {
     // Compute relations
     relations = columns.reduce((relations, column1, i, a) => {
       const v1 = allData.map(d => d[column1.name]);
@@ -764,6 +766,10 @@ export const digestable = () => {
 
   function drawLinks() {
     if (!table.node()) return;
+
+    if (relations.length === 0) {
+      computeRelations();
+    }
 
     linkSvg.style('display', showLinks ? null : 'none');
     if (!showLinks) return;
