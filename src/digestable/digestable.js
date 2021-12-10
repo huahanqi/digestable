@@ -76,6 +76,22 @@ export const digestable = () => {
     return counts;
   }, {}))).map(([key, value]) => ({ value: key, count: value })).sort((a, b) => d3.descending(a.count, b.count));
 
+  const significantDigits = n => {
+    const log10 = Math.log(10);
+
+    // Split decimal
+    let [n1, n2] = String(n).split('.');
+
+    // Handle left of decimal
+    n1 = Math.abs(n1);
+    const d1 = Math.floor(Math.log(n) / log10) + 1;
+
+    // Handle right of decimal
+    const d2 = n2 ? (n1 > 0 ? n2.length : Math.floor(Math.log(+n) / log10) + 1) : 0;
+
+    return Math.max(d1 + d2, 1);
+  };
+
   function clearSorting() {    
     // XXX: Could just use find?  
     columns.forEach(d => d.sort = null);
@@ -111,6 +127,7 @@ export const digestable = () => {
 
         if (column.type === 'numeric') {
           column.extent = d3.extent(numbers);
+          column.maxDigits = d3.max(numbers, significantDigits);
         }
       }
       else if (uniqueValues.length === inputData.length) {
@@ -355,6 +372,30 @@ export const digestable = () => {
     drawLinks();
 
     function drawHeader() {
+      const info = column => {
+        switch (column.type) {
+          case 'numeric': {
+            // Display range and median for clusters
+            const min = column.extent[0];
+            const max = column.extent[1];
+
+            return min === max ? min :
+              `<div class='range'><div>${ min }</div><div class='dash'><hr /></div><div>${ max }</div>`;    
+          }
+          
+          case 'categorical': {
+            return `<div>${ column.uniqueValues.length } categories</div>`;
+          }
+
+          case 'id': {
+            return `<div>${ column.uniqueValues.length } unique values<div>`;
+          }
+
+          default:
+            return null;
+        }
+      };
+
       // Header elements
       const th = table.select('thead').select('tr').selectAll('th')
         .data(columns, d => d.name)
@@ -362,12 +403,16 @@ export const digestable = () => {
           enter => {
             const th = enter.append('th');
 
-            const div = th.append('div');
+            const div = th.append('div')
+              .attr('class', 'headerDiv');
+
+            const nameDiv = div.append('div')
+              .attr('class', 'nameDiv');
             
-            div.append('div')                
+            nameDiv.append('div')                
               .text(d => d.name);
                       
-            div.append('button')
+            nameDiv.append('button')
               .attr('class', 'sortButton')
               .on('click', (evt, d) => {
                 sortByColumn(d);
@@ -376,6 +421,10 @@ export const digestable = () => {
 
                 dispatcher.call('sortByColumn', this, d);
               });
+
+            div.append('div')
+              .attr('class', 'info')
+              .html(info)
 
             th.append('div')
               .attr('class', 'highlight');
@@ -393,25 +442,21 @@ export const digestable = () => {
       th.select('.sortButton')
         .classed('active', d => d.sort !== null)
         .text(d => sortIcon(d.sort));
-    }
+    };
 
     function drawBody() {
-      const numberFormat = d3.format('.1f');
-
-      const text = (type, v) => {
+      const text = (type, v, maxDigits) => {
         switch (type) {
           case 'numeric': {
             if (v !== null && v.cluster && v.valid) {
               // Display range and median for clusters
-              const min = numberFormat(v.min);
-              const max = numberFormat(v.max);
-              const median = numberFormat(v.median);
+              const median = d3.format(`.${ maxDigits }r`)(v.median);
 
-              return min === max ? median :
-                `<div class='range'><div class='extrema'>${ min }</div><div>${ median }</div><div class='extrema'>${ max }<div>`;
+              return v.min === v.max ? median :
+                `<div class='range'><div class='extrema'>${ v.min }</div><div>${ median }</div><div class='extrema'>${ v.max }<div>`;
             }
             else {
-              return v === null || v.cluster ? '' : numberFormat(v);
+              return v === null || v.cluster ? '' : v;
             }
           }
           
@@ -463,7 +508,7 @@ export const digestable = () => {
           default:
             return null;
         }
-      }
+      };
 
       const maxSize = d3.max(data, d => {
         const v = Object.values(d)[0];
@@ -478,7 +523,8 @@ export const digestable = () => {
             .data(columns, d => d.name)
             .join(
               enter => {
-                const td = enter.append('td');
+                const td = enter.append('td')
+                  .style('transform', 'translate(0');
                 
                 const div = td.append('div') 
                   .attr('class', 'cellDiv');
@@ -502,11 +548,12 @@ export const digestable = () => {
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
-            .each(function(column) {
+            .each(function(column, i, a) {
               // Text
               const v = d[column.name];
 
-              d3.select(this).select('.valueDiv .textDiv').html(text(column.type, v));
+              d3.select(this).select('.valueDiv .textDiv')
+                .html(text(column.type, v, column.maxDigits));
 
               d3.select(this).select('.cellDiv').selectAll('.clusterDiv')
                 .data(clustering && column.sort !== null ? [v] : [])
@@ -526,6 +573,12 @@ export const digestable = () => {
                 )
                 .select('.textDiv')
                 .html(text('cluster', v));
+
+              d3.select(this).selectAll('.highlight')
+                .data(i === a.length - 1 ? [d] : [])
+                .join('div')
+                .attr('class', 'highlight')
+                .style('visibility', 'hidden');
             })
             .each(function(column) {
               // Get column width
@@ -671,18 +724,22 @@ export const digestable = () => {
                 });           
             })
             .on('mouseover', function(evt, column) {
+              //table.selectAll('td').filter(d => d === column).classed('mouseOver', true);
+
               table.selectAll('th').filter(d => d === column).select('.highlight')
-                .style('visibility', null);    
+                .style('visibility', null);  
 
               if (visualizationMode === 'interactive') {
                 table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
-                  .style('visibility', 'visible');
+                  .style('visibility', null);
               }
 
               linkSvg.selectAll('path')
                 .style('visibility', d => d.source === column || d.target === column ? null : 'hidden');
             })
             .on('mouseout', function(evt, column) {
+              //table.selectAll('td').filter(d => d === column).classed('mouseOver', false);
+
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
@@ -694,16 +751,28 @@ export const digestable = () => {
               linkSvg.selectAll('path')
                 .style('visibility', null);
             });
-        });     
+        })
+        .on('mouseover', function(evt, row) {                  
+          table.select('tbody').selectAll('tr').filter(d => d === row).select('.highlight')
+            .style('visibility', null);
+        })
+        .on('mouseout', function(evt, row) {
+          table.select('tbody').selectAll('tr').filter(d => d === row).select('.highlight')
+            .style('visibility', "hidden"); 
+        });;     
     }
 
     function highlight() {
       // Update border
-      const height = table.node() ? table.node().clientHeight - 1: 0;
+      const height = table.node() ? table.node().clientHeight - 4 : 0;
+      const width = table.node() ? table.node().clientWidth - 6 : 0;
 
       table.selectAll('th').select('.highlight')
         .style('height', `${ height }px`)
         .style('visibility', d => d.sort === null ? 'hidden' : null);
+
+      table.selectAll('td').select('.highlight')
+        .style('width', `${ width }px`);
     }
   } 
 
