@@ -573,12 +573,6 @@ export const digestable = () => {
                 )
                 .select('.textDiv')
                 .html(text('cluster', v));
-
-              d3.select(this).selectAll('.highlight')
-                .data(i === a.length - 1 ? [d] : [])
-                .join('div')
-                .attr('class', 'highlight')
-                .style('visibility', 'hidden');
             })
             .each(function(column) {
               // Get column width
@@ -724,8 +718,6 @@ export const digestable = () => {
                 });           
             })
             .on('mouseover', function(evt, column) {
-              //table.selectAll('td').filter(d => d === column).classed('mouseOver', true);
-
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', null);  
 
@@ -738,8 +730,6 @@ export const digestable = () => {
                 .style('visibility', d => d.source === column || d.target === column ? null : 'hidden');
             })
             .on('mouseout', function(evt, column) {
-              //table.selectAll('td').filter(d => d === column).classed('mouseOver', false);
-
               table.selectAll('th').filter(d => d === column).select('.highlight')
                 .style('visibility', d => d.sort === null ? 'hidden' : null); 
                 
@@ -752,27 +742,23 @@ export const digestable = () => {
                 .style('visibility', null);
             });
         })
-        .on('mouseover', function(evt, row) {                  
-          table.select('tbody').selectAll('tr').filter(d => d === row).select('.highlight')
-            .style('visibility', null);
+        .on('mouseover', function(evt, row) {         
+          table.select('tbody').selectAll('tr').filter(d => d === row).selectAll('td')
+            .classed('mouseOver', true);
         })
         .on('mouseout', function(evt, row) {
-          table.select('tbody').selectAll('tr').filter(d => d === row).select('.highlight')
-            .style('visibility', "hidden"); 
-        });;     
+          table.select('tbody').selectAll('tr').filter(d => d === row).selectAll('td')
+            .classed('mouseOver', false);
+        });   
     }
 
     function highlight() {
       // Update border
       const height = table.node() ? table.node().clientHeight - 4 : 0;
-      const width = table.node() ? table.node().clientWidth - 6 : 0;
 
       table.selectAll('th').select('.highlight')
         .style('height', `${ height }px`)
         .style('visibility', d => d.sort === null ? 'hidden' : null);
-
-      table.selectAll('td').select('.highlight')
-        .style('width', `${ width }px`);
     }
   } 
 

@@ -145,11 +145,6 @@ td .clusterSize {
   color: #999;
 }
 
-td .highlight {
-  position: absolute;
-  right: 1px;
-  top: 0;
-  height: calc(100% - 1px);
-  pointer-events: none;
-  box-shadow: 0px 0px 8px #999;
+td.mouseOver {
+  background: #fafafa;
 }
