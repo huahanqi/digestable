@@ -5,7 +5,7 @@ import { useScrollHook } from '../../hooks';
 import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
-  const [{ apply, method, amount, rows }, simplifyDispatch] = useContext(SimplifyContext);
+  const [{ apply, method, amount, rows, transformBase }, simplifyDispatch] = useContext(SimplifyContext);
   const [{ mode, showLinks }] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
@@ -67,6 +67,12 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.simplificationRows(rows);
     }
   }, [rows]);
+
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.transformBase(transformBase);
+    }
+  }, [transformBase]);
 
   // Visualization parameters
   useEffect(() => {

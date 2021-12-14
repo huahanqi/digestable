@@ -3,7 +3,8 @@ import React, { createContext, useReducer } from 'react';
 const methods = [
   { name: 'quantiles', type: 'rows' },
   { name: 'kmeans', type: 'rows' },
-  { name: 'threshold', type: 'amount' }
+  { name: 'gap', type: 'rows', transform: true }
+//  { name: 'threshold', type: 'amount' }
 ];
 
 const initialState = {
@@ -12,6 +13,7 @@ const initialState = {
   methods: methods,
   method: methods[0],
   amount: 0.5,
+  transformBase: 1,
   unique: 0,
   rows: 10 
 };
@@ -34,6 +36,12 @@ const reducer = (state, action) => {
       return {
         ...state,
         amount: action.amount
+      };
+
+    case 'setTransformBase':
+      return {
+        ...state,
+        transformBase: action.transformBase
       };
 
     case 'setColumnInfo': 

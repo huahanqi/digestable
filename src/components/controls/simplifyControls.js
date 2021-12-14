@@ -7,7 +7,7 @@ const { Group, Label, Check, Select, Range, Control } = Form;
 
 export const SimplifyControls = () => {
   const [
-    { apply, columnType, methods, method, amount, unique, rows }, 
+    { apply, columnType, methods, method, amount, transformBase, unique, rows }, 
     simplifyDispatch
   ] = useContext(SimplifyContext);
 
@@ -25,6 +25,10 @@ export const SimplifyControls = () => {
 
   const onRowsChange = evt => {
     simplifyDispatch({ type: 'setRows', rows: +evt.target.value });
+  };
+
+  const onTransformBaseChange = evt => {
+    simplifyDispatch({ type: 'setTransformBase', transformBase: +evt.target.value / 100 });
   };
 
   return (
@@ -65,7 +69,7 @@ export const SimplifyControls = () => {
           <Range 
             min={ 0 }
             max={ 100 }
-            step={ 0 }
+            step={ 1 }
             value={ amount * 100 }
             disabled={ columnType !== 'numeric' }
             onChange={ onAmountChange }
@@ -82,6 +86,18 @@ export const SimplifyControls = () => {
             value={ rows }
             disabled={ columnType !== 'numeric' }
             onChange={ onRowsChange }
+          />        
+        </Group>
+      }
+      { method.transform && 
+        <Group>
+          <Label>Depth weight</Label>
+          <Range 
+            min={ 100 }
+            max={ 400 }
+            step={ 1 }
+            value={ transformBase * 100 }
+            onChange={ onTransformBaseChange }
           />        
         </Group>
       }

@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { clusterQuantiles, kmeans, clusterThreshold, groupCategories } from './clustering';
+import { clusterQuantiles, kmeans, clusterGap, groupCategories } from './clustering';
 import { correlation, cramersV, categoricalRegression } from './relations';
 import './digestable.css';
 
@@ -22,6 +22,7 @@ export const digestable = () => {
       simplificationMethod = 'threshold',
       simplificationAmount = 0.9,
       simplificationRows = 20,
+      transformBase = 1,
       visualizationMode = 'text',
       showLinks = false,
 
@@ -309,7 +310,17 @@ export const digestable = () => {
       data = [...allData];
     }
 
-    function clusterNumeric(values, sort) {
+    function clusterNumeric(values, sort) {     
+      const transformValues = values => {
+        const base = sort === 'ascending' ? 1 / transformBase : transformBase;
+        
+        const valueScale = d3.scaleLinear()
+          .domain(d3.extent(values))
+          .range([0, 1]);
+  
+        return values.map(d => Math.pow(valueScale(d), base));
+      };
+
       const removeNull = values => {
         // Find first null. Always sorted to the end.
         const nullIndex = values.indexOf(null);      
@@ -341,8 +352,12 @@ export const digestable = () => {
           return applyNull(clusters.map(cluster => cluster.indeces), nullCluster);
         }
 
-        case 'threshold':
-          return clusterThreshold(values, simplificationAmount);
+        case 'gap': {
+          const [validValues, nullCluster, rows] = removeNull(values);
+          const clusters = clusterGap(transformValues(validValues), rows);
+
+          return applyNull(clusters, nullCluster);
+        }
 
         default:
           console.log(`Invalid simplificationMethod: ${ simplificationMethod }`);
@@ -873,6 +888,16 @@ export const digestable = () => {
   digestable.simplificationRows = function(_) {
     if (!arguments.length) return simplificationRows;
     simplificationRows = _;
+    if (applySimplification) {
+      processData();
+      drawTable();
+    }
+    return digestable;
+  };
+
+  digestable.transformBase = function(_) {
+    if (!arguments.length) return transformBase;
+    transformBase = _;
     if (applySimplification) {
       processData();
       drawTable();
