@@ -565,7 +565,7 @@ export const digestable = () => {
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
-            .each(function(column, i, a) {
+            .each(function(column) {
               // Text
               const v = d[column.name];
 
@@ -591,10 +591,16 @@ export const digestable = () => {
                 .select('.textDiv')
                 .html(text('cluster', v));
             })
+        });
+
+      table.select('tbody').selectAll('tr')
+        .each(function(d, i) {
+          d3.select(this).selectAll('td')      
             .each(function(column) {
               // Get column width
               if (i === 0) {
                 column.width = d3.select(this).select('.valueDiv').node().clientWidth;
+                //column.width = d3.max(table.selectAll('td').filter(d => d === column).selectAll('.valueDiv').nodes(), node => node.clientWidth);
               }
 
               const v = d[column.name];

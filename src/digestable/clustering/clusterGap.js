@@ -7,18 +7,11 @@ export const clusterGap = (values, numRows) => {
     return a.value === b.value ? d3.ascending(a.index, b.index) : d3.descending(a.value, b.value);
   });
 
-  const clusters = gaps.slice(0, numRows);
+  const clusters = gaps.slice(0, numRows - 1).map(gap => gap.index);
 
-  clusters.sort((a, b) => d3.ascending(a.index, b.index));
-
-  return clusters.reduce((clusters, gap, i, gaps) => {
-    if (i === gaps.length - 1) {
-      clusters.push(d3.range(gap.index, values.length));
-    }
-    else {
-      clusters.push(d3.range(gap.index, gaps[i + 1].index));
-    }
-
-    return clusters;
-  }, []);
+  clusters.sort(d3.ascending);
+  clusters.unshift(-1);
+  clusters.push(values.length - 1);
+  
+  return d3.pairs(clusters).map(d => d3.range(d[0] + 1, d[1] + 1));
 };
