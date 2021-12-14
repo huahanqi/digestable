@@ -3,7 +3,8 @@ import { clusterQuantiles, kmeans, clusterGap, groupCategories } from './cluster
 import { correlation, cramersV, categoricalRegression } from './relations';
 import './digestable.css';
 
-const initialIndex = '__i__';
+const initialIndexKey = '__i__';
+const pinnedKey = '__pinned__';
 
 export const digestable = () => {
       // The table
@@ -148,7 +149,7 @@ export const digestable = () => {
       const v = {...d};
 
       // Store initial order for sorting
-      v[initialIndex] = i;
+      v[initialIndexKey] = i;
 
       // Convert missing and numeric data
       columns.forEach(({ type, name }) => {
@@ -211,7 +212,7 @@ export const digestable = () => {
   function sortData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    const { name, sort } = sortColumn ? sortColumn : { name: initialIndex, sort: 'ascending' };
+    const { name, sort } = sortColumn ? sortColumn : { name: initialIndexKey, sort: 'ascending' };
 
     allData.sort((a, b) => {
       const v1 = a[name];
@@ -236,11 +237,12 @@ export const digestable = () => {
       const clusters = (type === 'numeric' ? clusterNumeric(values, sort) : clusterCategorical(values))
         .filter(cluster => cluster.length > 0);
 
-
       data = clusters.map(cluster => {
         const row = {};
 
         const size = cluster.length;
+
+        if (size === 1) return allData[cluster[0]];
 
         columns.forEach(column => {
           const { name, type, uniqueValues } = column;
@@ -248,12 +250,13 @@ export const digestable = () => {
           if (type === 'numeric') {
             const values = cluster.map(i => allData[i][name]);
 
-            if (values.length > 1) {
+            if (values.length > 0) {
               const validValues = values.filter(d => d !== null);
 
               row[name] = validValues.length > 0 ?
                 {
                   cluster: true,
+                  indeces: cluster,
                   size: size,
                   valid: true,
                   values: values,
@@ -266,13 +269,11 @@ export const digestable = () => {
                 } :
                 {
                   cluster: true,
+                  indeces: cluster,
                   size: size,
                   valid: false,
                   values: values
                 };
-            }
-            else if (values.length === 1) {
-              row[name] = values[0];
             }
             else {
               row[name] = null;
@@ -281,21 +282,17 @@ export const digestable = () => {
           else {
             const values = cluster.map(i => allData[i][name]);
 
-            if (values.length > 1) {
+            if (values.length > 0) {
               const counts = getCounts(uniqueValues, values);
               
               column.maxCount = Math.max(column.maxCount, counts[0].count);
 
               row[name] = {
                 cluster: true,
+                indeces: cluster,
                 size: size,
                 counts: counts
               };
-            }
-            else if (values.length === 1) {
-              column.maxCount = Math.max(column.maxCount, 1);
-
-              row[name] = values[0];
             }
             else {
               row[name] = null;
@@ -305,6 +302,22 @@ export const digestable = () => {
 
         return row;
       });
+
+      // Handle pinned rows
+      for (let i = allData.length - 1; i >= 0; i--) {
+        const d = allData[i];
+
+        if (!d[pinnedKey]) continue;
+
+        for (let j = 0; j < data.length; j++) {
+          const col = Object.values(data[j])[0];
+
+          if (col.cluster && col.indeces.length > 1 && col.indeces.includes(i)) {
+            data.splice(j + 1, 0, d);
+            break;
+          }
+        }
+      }
     }
     else {
       data = [...allData];
@@ -541,7 +554,7 @@ export const digestable = () => {
             .join(
               enter => {
                 const td = enter.append('td')
-                  .style('transform', 'translate(0');
+                  .classed('pinned', d[pinnedKey]);
                 
                 const div = td.append('div') 
                   .attr('class', 'cellDiv');
@@ -772,6 +785,21 @@ export const digestable = () => {
         .on('mouseout', function(evt, row) {
           table.select('tbody').selectAll('tr').filter(d => d === row).selectAll('td')
             .classed('mouseOver', false);
+        })
+        .on('click', function(evt, row) {
+          const col = Object.values(row)[0];
+
+          if (col.cluster) {
+            const pinned = col.indeces.reduce((pinned, index) => pinned || allData[index][pinnedKey], false);
+
+            col.indeces.forEach(d => allData[d][pinnedKey] = !pinned);
+          }
+          else {
+            row[pinnedKey] = !row[pinnedKey];
+          }
+
+          processData();
+          drawTable();
         });   
     }
 
