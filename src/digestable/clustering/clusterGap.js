@@ -12,8 +12,6 @@ export const clusterGap = (values, numRows) => {
   clusters.sort((a, b) => d3.ascending(a.index, b.index));
 
   return clusters.reduce((clusters, gap, i, gaps) => {
-
-    console.log(clusters);
     if (i === gaps.length - 1) {
       clusters.push(d3.range(gap.index, values.length));
     }
