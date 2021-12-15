@@ -6,7 +6,7 @@ import { digestable } from '../../digestable';
 
 export const TableWrapper = ({ data }) => {
   const [{ apply, method, amount, rows, transformBase }, simplifyDispatch] = useContext(SimplifyContext);
-  const [{ mode, showLinks }] = useContext(VisualizationContext);
+  const [{ mode, showLinks, categoryScaling }] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
 
@@ -25,7 +25,9 @@ export const TableWrapper = ({ data }) => {
         .simplificationMethod(method.name)      
         .simplificationAmount(amount)
         .simplificationRows(rows)
+        .transformBase(transformBase)
         .visualizationMode(mode)
+        .categoryScaling(categoryScaling)
         .on('sortByColumn', column => {
           simplifyDispatch({ 
             type: 'setColumnInfo', 
@@ -86,6 +88,12 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.showLinks(showLinks);
     }
   }, [showLinks]);
+
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.categoryScaling(categoryScaling);
+    }
+  }, [categoryScaling]);
 
   return (
     <div 

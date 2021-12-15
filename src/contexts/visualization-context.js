@@ -7,10 +7,17 @@ const modes = [
   'interactive'
 ];
 
+const categoryScalingOptions = [
+  'row',
+  'column'
+];
+
 const initialState = {
   modes: modes,
   mode: modes[0],
-  showLinks: false
+  showLinks: false,
+  categoryScalingOptions: categoryScalingOptions,
+  categoryScaling: categoryScalingOptions[0]
 };
 
 const reducer = (state, action) => {
@@ -25,6 +32,12 @@ const reducer = (state, action) => {
       return {
         ...state,
         showLinks: action.showLinks
+      }
+
+    case 'setCategoryScaling':
+      return {
+        ...state,
+        categoryScaling: action.categoryScaling
       }
 
     default: 

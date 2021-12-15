@@ -6,7 +6,10 @@ import { ControlPanel } from './controlPanel';
 const { Group, Select, Check } = Form;
 
 export const VisualizationControls = () => {
-  const [{ modes, mode, showLinks }, visualizationDispatch] = useContext(VisualizationContext);
+  const [
+    { modes, mode, showLinks, categoryScalingOptions, categoryScaling }, 
+    visualizationDispatch
+  ] = useContext(VisualizationContext);
 
   const onModeChange = evt => {
     visualizationDispatch({ type: 'setMode', mode: evt.target.value });
@@ -14,6 +17,10 @@ export const VisualizationControls = () => {
 
   const onShowLinksChange = evt => {
     visualizationDispatch({ type: 'setShowLinks', showLinks: evt.target.checked });
+  };
+
+  const onCategoryScalingChange = evt => {
+    visualizationDispatch({ type: 'setCategoryScaling', categoryScaling: evt.target.value });
   };
 
   return (
@@ -45,6 +52,24 @@ export const VisualizationControls = () => {
           checked={ showLinks }
           onChange={ onShowLinksChange }
         />
+      </Group>
+      <Group>
+        <FloatingLabel label="Category scaling">
+          <Select 
+            value={ categoryScaling }
+            onChange={ onCategoryScalingChange }
+          >
+            { categoryScalingOptions.map((option, i) => (
+                <option 
+                  key={ i } 
+                  value={ option }
+                >
+                  { option }
+                </option>
+              ))
+            }
+          </Select>
+        </FloatingLabel>
       </Group>
     </ControlPanel>
   );

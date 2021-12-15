@@ -28,6 +28,7 @@ export const digestable = () => {
       transformBase = 1,
       visualizationMode = 'text',
       showLinks = false,
+      categoryScaling = 'row',
 
       paddingX = 5,
       paddingY = 0,
@@ -707,7 +708,7 @@ export const digestable = () => {
                         .range([0, column.width]);
 
                       const yScale = d3.scaleLinear()
-                        .domain([0, column.maxCount])
+                        .domain(categoryScaling === 'row' ? [0, d3.max(counts, d => d.count)] : [0, column.maxCount])
                         .range([height, 0]);
 
                       // Bars
@@ -968,6 +969,13 @@ export const digestable = () => {
   digestable.showLinks = function(_) {
     if (!arguments.length) return showLinks;
     showLinks = _;
+    drawTable();
+    return digestable;
+  };
+
+  digestable.categoryScaling = function(_) {
+    if (!arguments.length) return categoryScaling;
+    categoryScaling = _;
     drawTable();
     return digestable;
   };
