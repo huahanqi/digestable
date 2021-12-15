@@ -2,11 +2,6 @@ import * as d3 from 'd3';
 import { clusterQuantiles, kmeans, clusterGap, groupCategories } from './clustering';
 import { correlation, cramersV, categoricalRegression } from './relations';
 import './digestable.css';
-import { equalIntervalBreaks } from 'simple-statistics';
-
-const initialIndexKey = '__i__';
-const pinnedKey = '__pinned__';
-const expandedKey = '__expanded__';
 
 export const digestable = () => {
       // The table
