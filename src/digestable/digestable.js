@@ -2,6 +2,7 @@ import * as d3 from 'd3';
 import { clusterQuantiles, kmeans, clusterGap, groupCategories } from './clustering';
 import { correlation, cramersV, categoricalRegression } from './relations';
 import './digestable.css';
+import { equalIntervalBreaks } from 'simple-statistics';
 
 const initialIndexKey = '__i__';
 const pinnedKey = '__pinned__';
@@ -95,8 +96,7 @@ export const digestable = () => {
     return Math.max(d1 + d2, 1);
   };
 
-  function clearSorting() {    
-    // XXX: Could just use find?  
+  function clearSorting() {     
     columns.forEach(d => d.sort = null);
   }
 
@@ -149,15 +149,11 @@ export const digestable = () => {
     allData = inputData.map((d, i) => {
       const v = {...d};
 
-      // Store initial order for sorting
-      v[initialIndexKey] = i;
-
       // Convert missing and numeric data
       columns.forEach(({ type, name }) => {
         const value = v[name];
-        const missing = isMissing(value);
 
-        if (missing) {
+        if (isMissing(value)) {
           v[name] = null;
         }
         else if (type === 'numeric') {
@@ -165,23 +161,30 @@ export const digestable = () => {
         }
       });
 
-      return v;
+      return {
+        initialIndex: i,
+        isCluster: false,
+        cluster: null,
+        pinned: false,        
+        expanded: false,
+        values: v
+      };
     });
   }
 
   function computeRelations() {
     // Compute relations
     relations = columns.reduce((relations, column1, i, a) => {
-      const v1 = allData.map(d => d[column1.name]);
+      const v1 = allData.map(d => d.values[column1.name]);
 
       for (let j = i + 1; j < a.length; j++) {
         const column2 = a[j];
-        const v2 = allData.map(d => d[column2.name]);
+        const v2 = allData.map(d => d.values[column2.name]);
 
         const value = column1.type === 'id' || column2.type === 'id' ? 0 :
           column1.type === 'categorical' && column2.type === 'categorical' ? cramersV(v1, v2) :
-          column1.type === 'categorical' ? categoricalRegression(v1, v2) :
-          column2.type === 'categorical' ? categoricalRegression(v2, v1) :
+          column1.type === 'categorical' && column2.type === 'numeric' ? categoricalRegression(v1, v2) :
+          column1.type === 'numeric' && column2.type === 'categorical' ? categoricalRegression(v2, v1) :
           correlation(v1, v2);
 
         relations.push({
@@ -213,19 +216,20 @@ export const digestable = () => {
   function sortData() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    const { name, sort } = sortColumn ? sortColumn : { name: initialIndexKey, sort: 'ascending' };
+    const sort = sortColumn ? sortColumn.sort : 'ascending';
 
     allData.sort((a, b) => {
-      const v1 = a[name];
-      const v2 = b[name];
+      const v1 = sortColumn ? a.values[sortColumn.name] : a.initialIndex;
+      const v2 = sortColumn ? b.values[sortColumn.name] : b.initialIndex;
+
       return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
     });
-
-    // Clear expanded
-    allData.forEach(d => d[expandedKey] = false);
   }
 
   function processData() {
+    // Clear expanded
+    allData.forEach(d => d.expanded = false);
+
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
     // Initialize categorical and id column counts
@@ -236,32 +240,44 @@ export const digestable = () => {
     if (clustering) {
       const { name, type, sort } = sortColumn;
 
-      const values = allData.map(d => d[name]);
+      const values = allData.map(d => d.values[name]);
 
       const clusters = (type === 'numeric' ? clusterNumeric(values, sort) : clusterCategorical(values))
         .filter(cluster => cluster.length > 0);
 
       data = clusters.map(cluster => {
-        const row = {};
-
         const size = cluster.length;
 
-        if (size === 1) return allData[cluster[0]];
+        // No cluster if only 1
+        if (size === 1) {
+          allData[cluster[0]].cluster = null;
 
+          return allData[cluster[0]];
+        }
+
+        // Create row object
+        const row = {
+          isCluster: true,
+          indeces: cluster,
+          size: size,
+          values: {}
+        };
+
+        // Set cluster object for each item
+        cluster.forEach(i => allData[i].cluster = row);        
+
+        // Compute info based on column type
         columns.forEach(column => {
           const { name, type, uniqueValues } = column;
 
           if (type === 'numeric') {
-            const values = cluster.map(i => allData[i][name]);
+            const values = cluster.map(i => allData[i].values[name]);
 
             if (values.length > 0) {
               const validValues = values.filter(d => d !== null);
 
-              row[name] = validValues.length > 0 ?
+              row.values[name] = validValues.length > 0 ?
                 {
-                  cluster: true,
-                  indeces: cluster,
-                  size: size,
                   valid: true,
                   values: values,
                   validValues: validValues,
@@ -272,56 +288,34 @@ export const digestable = () => {
                   q2: d3.quantile(validValues, 0.75)
                 } :
                 {
-                  cluster: true,
-                  indeces: cluster,
-                  size: size,
                   valid: false,
                   values: values
                 };
             }
             else {
-              row[name] = null;
+              row.values[name] = null;
             }
           }
           else {
-            const values = cluster.map(i => allData[i][name]);
+            const values = cluster.map(i => allData[i].values[name]);
 
             if (values.length > 0) {
               const counts = getCounts(uniqueValues, values);
               
               column.maxCount = Math.max(column.maxCount, counts[0].count);
 
-              row[name] = {
-                cluster: true,
-                indeces: cluster,
-                size: size,
+              row.values[name] = {
                 counts: counts
               };
             }
             else {
-              row[name] = null;
+              row.values[name] = null;
             }
           }
         });
 
         return row;
       });
-
-      // Handle pinned and expanded rows
-      for (let i = allData.length - 1; i >= 0; i--) {
-        const d = allData[i];
-
-        if (!d[pinnedKey] && !d[expandedKey]) continue;
-
-        for (let j = 0; j < data.length; j++) {
-          const col = Object.values(data[j])[0];
-
-          if (col.cluster && col.indeces.length > 1 && col.indeces.includes(i)) {
-            data.splice(j + 1, 0, d);
-            break;
-          }
-        }
-      }
     }
     else {
       data = [...allData];
@@ -476,10 +470,10 @@ export const digestable = () => {
     };
 
     function drawBody() {
-      const text = (type, v, maxDigits) => {
+      const text = (type, v, isCluster, maxDigits) => {
         switch (type) {
           case 'numeric': {
-            if (v !== null && v.cluster && v.valid) {
+            if (v !== null && isCluster && v.valid) {
               // Display range and median for clusters
               const median = d3.format(`.${ maxDigits }r`)(v.median);
 
@@ -487,12 +481,12 @@ export const digestable = () => {
                 `<div class='range'><div class='extrema'>${ v.min }</div><div>${ median }</div><div class='extrema'>${ v.max }<div>`;
             }
             else {
-              return v === null || v.cluster ? '' : v;
+              return v === null || isCluster ? '' : v;
             }
           }
           
           case 'categorical': {
-            if (v !== null && v.cluster) {
+            if (v !== null && isCluster) {
               // Display top category and number of other categories
               const top = v.counts[0];
               const others = v.counts.slice(1).filter(d => d.count > 0);
@@ -512,7 +506,7 @@ export const digestable = () => {
           }
 
           case 'id': {
-            if (v !== null && v.cluster) {
+            if (v !== null && isCluster) {
               // Display first id and number of other ids
               const top = v.counts[0];
               const others = v.counts.slice(1).filter(d => d.count > 0);
@@ -531,9 +525,7 @@ export const digestable = () => {
           }
 
           case 'cluster': {
-            const size = v !== null && v.cluster ? v.size : 1;
-
-            return `<div class='clusterSize'>n = ${ size }</div>`;
+            return `<div class='clusterSize'>n = ${ v }</div>`;
           }
 
           default:
@@ -541,20 +533,31 @@ export const digestable = () => {
         }
       };
 
-      const maxSize = d3.max(data, d => {
-        const v = Object.values(d)[0];
-        return v.size ? v.size : 1;
-      });
+      // Insert pinned and expanded rows
+      const expandedData = [...data];
+
+      for (let i = allData.length - 1; i >= 0; i--) {
+        const d = allData[i];
+  
+        if (!d.pinned && !d.expanded) continue;
+  
+        for (let j = 0; j < data.length; j++) {
+          const row = expandedData[j];
+  
+          if (row.isCluster && row.indeces.length > 1 && row.indeces.includes(i)) {
+            expandedData.splice(j + 1, 0, d);
+            break;
+          }
+        }
+      }
+
+      const maxSize = d3.max(data, d => d.isCluster ? d.size : 1);
 
       table.select('tbody').selectAll('tr')
-        .data(data)
+        .data(expandedData)
         .join('tr')
-        .style('cursor', d => {
-          const col = Object.values(d)[0];
-
-          return col.cluster ? allData[col.indeces[0]][expandedKey] ? 'zoom-out' : 'zoom-in': 'pointer';
-        })
-        .each(function(d, i) {
+        .style('cursor', d => d.isCluster ? allData[d.indeces[0]].expanded ? 'zoom-out' : 'zoom-in': 'pointer')
+        .each(function(d) {
           d3.select(this).selectAll('td')
             .data(columns, d => d.name)
             .join(
@@ -585,14 +588,14 @@ export const digestable = () => {
             .style('padding-bottom', py)
             .each(function(column) {
               // Text
-              const v = d[column.name];
+              const v = d.values[column.name];
 
               const td = d3.select(this)
-                .classed('expanded', d[expandedKey])
-                .classed('pinned', d[pinnedKey])
+                .classed('expanded', d.expanded)
+                .classed('pinned', d.pinned)
 
               td.select('.valueDiv .textDiv')
-                .html(text(column.type, v, column.maxDigits));
+                .html(text(column.type, v, d.isCluster, column.maxDigits));
 
               td.select('.cellDiv').selectAll('.clusterDiv')
                 .data(clustering && column.sort !== null ? [v] : [])
@@ -611,7 +614,7 @@ export const digestable = () => {
                   }
                 )
                 .select('.textDiv')
-                .html(text('cluster', v));
+                .html(text('cluster', d.isCluster ? d.size : 1));
             })
         });
 
@@ -625,7 +628,7 @@ export const digestable = () => {
                 column.width = d3.select(this).select('.valueDiv').node().clientWidth;
               }
 
-              const v = d[column.name];
+              const v = d.values[column.name];
 
               const height = 10;
 
@@ -633,7 +636,7 @@ export const digestable = () => {
               switch (column.type) {
                 case 'numeric':
                   d3.select(this).select('.valueDiv .visDiv').selectAll('svg')
-                    .data(v === null || (v.cluster && !v.valid) ? [] : [v])
+                    .data(v === null || (d.isCluster && !v.valid) ? [] : [v])
                     .join('svg')
                     .attr('width', column.width)
                     .attr('height', height)
@@ -656,7 +659,7 @@ export const digestable = () => {
 
                       // Quartile line
                       svg.selectAll('line')
-                        .data(v.cluster ? [[v.min, v.max, v.median], [v.q1, v.q2, v.median]] : [])
+                        .data(d.isCluster ? [[v.min, v.max, v.median], [v.q1, v.q2, v.median]] : [])
                         .join(
                           enter => enter.append('line')
                             .style('margin', 0)
@@ -672,7 +675,7 @@ export const digestable = () => {
 
                       // Median
                       svg.selectAll('circle')
-                        .data(v.cluster ? [v.median] : [v])
+                        .data(d.isCluster ? [v.median] : [v])
                         .join('circle')
                         .attr('cx', d => xScale(d))
                         .attr('cy', y)
@@ -738,16 +741,16 @@ export const digestable = () => {
               const clusterWidth = 30;
 
               d3.select(this).select('.clusterDiv .visDiv').selectAll('svg')
-                .data([v])
+                .data([d])
                 .join('svg')
                 .attr('width', clusterWidth)
                 .attr('height', height)
-                .each(function(v) {  
+                .each(function(d) {  
                   const svg = d3.select(this);
 
                   const height = 5;
 
-                  const size = v !== null && v.size ? v.size : 1;
+                  const size = d.isCluster ? d.size : 1;
 
                   const xScale = d3.scaleLinear()
                     .domain([0, maxSize])
@@ -755,7 +758,7 @@ export const digestable = () => {
 
                   // Bar
                   svg.selectAll('rect')
-                    .data([v])
+                    .data([d])
                     .join('rect')
                     .attr('width', xScale(size))
                     .attr('height', height)
@@ -796,28 +799,23 @@ export const digestable = () => {
             .classed('mouseOver', false);
         })
         .on('click', function(evt, row) {
-          const col = Object.values(row)[0];
+          if (row.isCluster) {
+            row.indeces.forEach(i => {
+              allData[i].expanded = !allData[i].expanded;
+            });
 
-          if (col.cluster) {
-            // XXX: Change data model to have each row contain data per cluster, as opposed to each row/column
-            const expanded = allData[col.indeces[0]][expandedKey];
-
-            col.indeces.forEach(d => allData[d][expandedKey] = !expanded);
-
-            processData();
             drawTable();
           }
           else {
-            row[pinnedKey] = !row[pinnedKey];
+            row.pinned = !row.pinned
 
-            if (row[pinnedKey]) {
+            if (row.pinned) {
               // Already shown
               d3.select(this).selectAll('td')
                 .classed('pinned', true);
             }
             else {
               // Need to hide
-              processData();
               drawTable();
             }
           }
