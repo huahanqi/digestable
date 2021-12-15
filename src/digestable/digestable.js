@@ -220,6 +220,9 @@ export const digestable = () => {
       const v2 = b[name];
       return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
     });
+
+    // Clear expanded
+    allData.forEach(d => d[expandedKey] = false);
   }
 
   function processData() {
@@ -546,14 +549,17 @@ export const digestable = () => {
       table.select('tbody').selectAll('tr')
         .data(data)
         .join('tr')
+        .style('cursor', d => {
+          const col = Object.values(d)[0];
+
+          return col.cluster ? allData[col.indeces[0]][expandedKey] ? 'zoom-out' : 'zoom-in': 'pointer';
+        })
         .each(function(d, i) {
           d3.select(this).selectAll('td')
             .data(columns, d => d.name)
             .join(
               enter => {
-                const td = enter.append('td')
-                  .classed('expanded', d[expandedKey])
-                  .classed('pinned', d[pinnedKey]);
+                const td = enter.append('td');
                 
                 const div = td.append('div') 
                   .attr('class', 'cellDiv');
@@ -581,10 +587,14 @@ export const digestable = () => {
               // Text
               const v = d[column.name];
 
-              d3.select(this).select('.valueDiv .textDiv')
+              const td = d3.select(this)
+                .classed('expanded', d[expandedKey])
+                .classed('pinned', d[pinnedKey])
+
+              td.select('.valueDiv .textDiv')
                 .html(text(column.type, v, column.maxDigits));
 
-              d3.select(this).select('.cellDiv').selectAll('.clusterDiv')
+              td.select('.cellDiv').selectAll('.clusterDiv')
                 .data(clustering && column.sort !== null ? [v] : [])
                 .join(
                   enter => {
@@ -790,7 +800,7 @@ export const digestable = () => {
 
           if (col.cluster) {
             // XXX: Change data model to have each row contain data per cluster, as opposed to each row/column
-            const expanded = col.indeces.reduce((pinned, index) => pinned || allData[index][expandedKey], false);
+            const expanded = allData[col.indeces[0]][expandedKey];
 
             col.indeces.forEach(d => allData[d][expandedKey] = !expanded);
 
