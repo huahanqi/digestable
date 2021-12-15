@@ -393,9 +393,6 @@ export const digestable = () => {
       '↕'
     );
 
-    // Ensure columns widths reset properly
-    table.selectAll('th, td, svg').remove();
-
     drawHeader();
     drawBody();
     applyVisualizationMode();
