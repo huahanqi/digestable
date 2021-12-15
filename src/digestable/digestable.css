@@ -149,8 +149,11 @@ td.mouseOver {
   background: #f9f9f9;
 }
 
+td.expanded {
+  border-top: none;
+  border-bottom: none;
+}
+
 td.pinned {
-  border-top: 1px solid #f3f3f3;
-  border-bottom: 1px solid #f3f3f3;
   background: #f3f3f3;
 }

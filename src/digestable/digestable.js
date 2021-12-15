@@ -5,6 +5,7 @@ import './digestable.css';
 
 const initialIndexKey = '__i__';
 const pinnedKey = '__pinned__';
+const expandedKey = '__expanded__';
 
 export const digestable = () => {
       // The table
@@ -303,11 +304,11 @@ export const digestable = () => {
         return row;
       });
 
-      // Handle pinned rows
+      // Handle pinned and expanded rows
       for (let i = allData.length - 1; i >= 0; i--) {
         const d = allData[i];
 
-        if (!d[pinnedKey]) continue;
+        if (!d[pinnedKey] && !d[expandedKey]) continue;
 
         for (let j = 0; j < data.length; j++) {
           const col = Object.values(data[j])[0];
@@ -554,6 +555,7 @@ export const digestable = () => {
             .join(
               enter => {
                 const td = enter.append('td')
+                  .classed('expanded', d[expandedKey])
                   .classed('pinned', d[pinnedKey]);
                 
                 const div = td.append('div') 
@@ -790,16 +792,28 @@ export const digestable = () => {
           const col = Object.values(row)[0];
 
           if (col.cluster) {
-            const pinned = col.indeces.reduce((pinned, index) => pinned || allData[index][pinnedKey], false);
+            // XXX: Change data model to have each row contain data per cluster, as opposed to each row/column
+            const expanded = col.indeces.reduce((pinned, index) => pinned || allData[index][expandedKey], false);
 
-            col.indeces.forEach(d => allData[d][pinnedKey] = !pinned);
+            col.indeces.forEach(d => allData[d][expandedKey] = !expanded);
+
+            processData();
+            drawTable();
           }
           else {
             row[pinnedKey] = !row[pinnedKey];
-          }
 
-          processData();
-          drawTable();
+            if (row[pinnedKey]) {
+              // Already shown
+              d3.select(this).selectAll('td')
+                .classed('pinned', true);
+            }
+            else {
+              // Need to hide
+              processData();
+              drawTable();
+            }
+          }
         });   
     }
 
