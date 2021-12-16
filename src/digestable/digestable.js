@@ -386,6 +386,9 @@ export const digestable = () => {
       '↕'
     );
 
+    // Reset svg widths for proper column width sizing
+    table.selectAll('svg').attr('width', 0);
+
     drawHeader();
     drawBody();
     applyVisualizationMode();
@@ -552,7 +555,8 @@ export const digestable = () => {
       table.select('tbody').selectAll('tr')
         .data(expandedData)
         .join('tr')
-        .style('cursor', d => d.isCluster ? allData[d.indeces[0]].expanded ? 'zoom-out' : 'zoom-in': 'pointer')
+        //.style('cursor', d => d.isCluster ? allData[d.indeces[0]].expanded ? 'zoom-out' : 'zoom-in': 'pointer')
+        .style('cursor', 'pointer')
         .each(function(d) {
           d3.select(this).selectAll('td')
             .data(columns, d => d.name)
