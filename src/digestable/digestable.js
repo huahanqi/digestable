@@ -820,7 +820,7 @@ export const digestable = () => {
                   }
                 )
                 .select('.textDiv')
-                .html(text('cluster', d.isCluster ? d.size : 1));
+                .html(d.expanded ? '' : text('cluster', d.isCluster ? d.size : 1));
             })
         });
 
@@ -964,7 +964,7 @@ export const digestable = () => {
 
                   // Bar
                   svg.selectAll('rect')
-                    .data([d])
+                    .data(d.expanded ? [] : [d])
                     .join('rect')
                     .attr('width', xScale(size))
                     .attr('height', height)
