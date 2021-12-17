@@ -407,8 +407,8 @@ export const digestable = () => {
         }
 
         case 'categorical': {
-          const v1 = a.isCluster ? a.values[name].counts[0].value : a.values[name];
-          const v2 = b.isCluster ? b.values[name].counts[0].value : b.values[name];
+          const v1 = a.isCluster ? a.values[name].counts[0].count / a.size : a.values[name];
+          const v2 = b.isCluster ? b.values[name].counts[0].count / b.size : b.values[name];
       
           return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
         }
