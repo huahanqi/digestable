@@ -124,6 +124,10 @@ export const digestable = () => {
 
           column.type = isId ? 'id' : 'numeric';
         }
+        else if (numbers.length === 2 && numbers.includes(0) && numbers.includes(1)) {
+          // Treat binary as categorical
+          column.type = 'categorical';
+        }
         else {
           column.type = 'numeric';            
         }
@@ -132,6 +136,10 @@ export const digestable = () => {
           column.values = numbers;
           column.extent = d3.extent(numbers);
           column.maxDigits = d3.max(numbers, significantDigits);
+        }
+        else if (column.type === 'categorical') {
+          column.type = 'categorical';        
+          column.counts = getCounts(uniqueValues, values);
         }
       }
       else if (uniqueValues.length === inputData.length) {
@@ -723,22 +731,30 @@ export const digestable = () => {
       };
 
       // Insert pinned and expanded rows
-      const expandedData = [...data];
+      const expandedData = [];
 
-      for (let i = allData.length - 1; i >= 0; i--) {
-        const d = allData[i];
-  
-        if (!d.pinned && !d.expanded) continue;
-  
-        for (let j = 0; j < data.length; j++) {
-          const row = expandedData[j];
-  
-          if (row.isCluster && row.indeces.length > 1 && row.indeces.includes(i)) {
-            expandedData.splice(j + 1, 0, d);
-            break;
-          }
+      const sortColumn = columns.find(({ sort }) => sort !== null);
+      const clusterColumn = columns.find(({ cluster }) => cluster !== null);
+
+      data.forEach(row => {
+        expandedData.push(row);
+
+        if (row.isCluster) {
+          const insert = row.indeces.map(i => allData[i]).filter(d => d.pinned || d.expanded);
+
+          const name = sortColumn ? sortColumn.name : clusterColumn.name;
+          const sort = sortColumn ? sortColumn.sort : clusterColumn.cluster;
+
+          insert.sort((a, b) => {
+            const v1 = a.values[name];
+            const v2 = b.values[name];
+
+            return v1 === null && v2 === null ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          });
+
+          expandedData.push(...insert);
         }
-      }
+      });
 
       const maxSize = d3.max(data, d => d.isCluster ? d.size : 1);
 
@@ -1089,7 +1105,8 @@ export const digestable = () => {
       .style('stroke', d => colorScale(d.value))
       .style('stroke-opacity', d => opacityScale(d.magnitude) )
       .style('stroke-width', d => widthScale(d.magnitude))
-      .style('stroke-linecap', 'round');
+      .style('stroke-linecap', 'round')
+      .append('title').text(d => d.value);
   }
 
   function applyVisualizationMode() {
