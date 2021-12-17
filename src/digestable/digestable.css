@@ -10,6 +10,7 @@ th {
   top: 0; 
   z-index: 2; 
   background-color: #eee;
+  vertical-align: top;
 }
 
 th, td { 
@@ -26,7 +27,7 @@ th.active {
   left: 0;
   right: 0;
   z-index: 3;
-  background: #ccc ;
+  background: #f8f8f8 ;
 }
 
 td.active {

@@ -129,15 +129,16 @@ export const digestable = () => {
         }
 
         if (column.type === 'numeric') {
+          column.values = numbers;
           column.extent = d3.extent(numbers);
           column.maxDigits = d3.max(numbers, significantDigits);
         }
       }
       else if (uniqueValues.length === inputData.length) {
-        column.type = 'id';
+        column.type = 'id';        
       }
       else {
-        column.type = 'categorical';
+        column.type = 'categorical';        
         column.counts = getCounts(uniqueValues, values);
       }
     });
@@ -381,7 +382,7 @@ export const digestable = () => {
         }
 
         default:
-          console.log(`Invalid simplificationMethod: ${ simplificationMethod }`);
+          console.log(`Unknown simplification method: ${ simplificationMethod }`);
       }
     }
 
@@ -421,7 +422,7 @@ export const digestable = () => {
         }
 
         default: 
-          console.log('Invalid column type');
+          console.log(`Unknown column type ${ type }`);
           return 0;
       }
     });
@@ -432,9 +433,12 @@ export const digestable = () => {
     const py = paddingY + 'px';
 
     const clusterIcon = cluster => (
-      cluster === 'ascending' ? '⇓' :
-      cluster === 'descending' ? '⇑' :
-      '⇕'
+      cluster === 'ascending' ? '⊻' :
+      cluster === 'descending' ? '⊼' :
+      '≡'
+      //cluster === 'ascending' ? '⇟' :
+      //cluster === 'descending' ? '⇞' :
+      //'≡'
     );
 
     const sortIcon = sort => sort === 'ascending' ? '⇣' : '⇡';    
@@ -502,6 +506,7 @@ export const digestable = () => {
             
             nameDiv.append('button')
               .attr('class', 'headerButton clusterButton')
+              .style('font-weight', 'bold')
               .on('click', (evt, d) => {
                 clusterByColumn(d);
                 processData();
@@ -513,7 +518,22 @@ export const digestable = () => {
 
             div.append('div')
               .attr('class', 'info')
-              .html(info)
+              .html(info);
+
+            div.each(function(column) {
+              d3.select(this).selectAll('.visDiv')
+                .data(column.type === 'id' ? [] : [column])
+                .join(
+                  enter => {
+                    const div = enter.append('div')
+                      .attr('class', 'visDiv');
+
+                    div.append('svg');
+
+                    return div;
+                  }
+                )
+            });
 
             th.append('div')
               .attr('class', 'highlight');
@@ -536,6 +556,106 @@ export const digestable = () => {
         .classed('active', d => d.sort !== null)
         .style('visibility', d => d.cluster === null && showSortButtons ? null : 'hidden')
         .text(d => sortIcon(d.sort));
+
+      // Separate out the visualization update so we have an accurate width after rendering textual elements
+      table.select('thead').selectAll('tr')
+        .each(function() {
+          d3.select(this).selectAll('th')      
+            .each(function(column) {
+              const width = d3.select(this).select('.nameDiv').node().clientWidth;
+              const height = 10;
+
+              // Visualization
+              switch (column.type) {
+                case 'numeric': {
+                  const svg = d3.select(this).select('.visDiv svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                  const xScale = d3.scaleLinear()
+                    .domain(column.extent)
+                    .rangeRound([0, width]);
+
+                  const bin = d3.bin()
+                    .domain(xScale.domain());
+
+                  const bins = bin(column.values);                    
+
+                  const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(bins, d => d.length)])
+                    .range([height, 0]);
+
+                  // Histogram
+                  svg.selectAll('rect')
+                    .data(bins)
+                    .join(
+                      enter => {
+                        const rect = enter.append('rect')
+                          .style('fill', '#aaa');
+
+                        rect.append('title');
+
+                        return rect;
+                      }
+                    )
+                    .attr('x', d => xScale(d.x0))
+                    .attr('y', d => yScale(d.length))
+                    .attr('width', d => xScale(d.x1) - xScale(d.x0) - 1)
+                    .attr('height', d => yScale(0) - yScale(d.length))
+                    .select('title').text(d => `${d.x0}-${d.x1}: ${d.length}`);
+
+                  break;
+                }
+
+                case 'categorical': {
+                  const svg = d3.select(this).select('.visDiv svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                  const colorScale = d3.scaleOrdinal()
+                      .domain(column.uniqueValues)
+                      .range(d3.schemeTableau10);
+
+                  const xScale = d3.scaleBand()
+                    .domain(column.uniqueValues)
+                    .range([0, width]);
+
+                  const yScale = d3.scaleLinear()
+                    .domain([0, d3.max(column.counts, d => d.count)])
+                    .range([height, 0]);
+
+                  // Bars
+                  svg.selectAll('rect')
+                    .data(column.counts)
+                    .join(
+                      enter => {
+                        const rect = enter.append('rect');
+                        rect.append('title');
+                        return rect;
+                      }
+                    )
+                    .attr('x', d => xScale(d.value))
+                    .attr('y', d => yScale(d.count))
+                    .attr('width', xScale.bandwidth())
+                    .attr('height', d => yScale(0) - yScale(d.count))
+                    .attr('fill', d => colorScale(d.value))
+                    .select('title').text(d => `${ d.value }: ${ d.count }`);
+
+                  break;
+                }
+
+                case 'id':
+                  d3.select(this).select('.visDiv svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                  break;
+
+                default:
+                  console.log(`Unknown column type ${ column.type }`);
+              }
+            }); 
+        });
     };
 
     function drawBody() {
@@ -688,7 +808,7 @@ export const digestable = () => {
             })
         });
 
-      // Separate out the visualizatioin update so we have an accurate width after rendering textual elements
+      // Separate out the visualization update so we have an accurate width after rendering textual elements
       table.select('tbody').selectAll('tr')
         .each(function(d, i) {
           d3.select(this).selectAll('td')      
