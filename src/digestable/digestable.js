@@ -97,7 +97,7 @@ export const digestable = () => {
   }
 
   function clearClustering() {
-    columns.forEach(d => d.cluster = false);
+    columns.forEach(d => d.cluster = null);
   }
 
   function createColumns(inputData) {
@@ -211,9 +211,12 @@ export const digestable = () => {
   }
 
   function clusterByColumn(column) {    
-    const cluster = !column.cluster;
+    const cluster = column.cluster === null ? 'descending' :
+      column.cluster === 'descending' ? 'ascending' :
+      null;
     
     clearClustering();
+    clearSorting();
 
     column.cluster = cluster;
   }
@@ -221,8 +224,7 @@ export const digestable = () => {
   function sortData() {
     const clusterColumn = columns.find(({ cluster }) => cluster);
 
-    //const sort = sortColumn ? sortColumn.sort : 'ascending';
-    const sort = 'ascending';
+    const sort = clusterColumn ? clusterColumn.cluster : 'ascending';
 
     allData.sort((a, b) => {
       const v1 = clusterColumn ? a.values[clusterColumn.name] : a.initialIndex;
@@ -246,7 +248,7 @@ export const digestable = () => {
     clustering = applySimplification && clusterColumn && clusterColumn.type !== 'id';
 
     if (clustering) {
-      const { name, type, sort } = clusterColumn;
+      const { name, type, cluster: sort } = clusterColumn;
 
       const values = allData.map(d => d.values[name]);
 
@@ -391,37 +393,36 @@ export const digestable = () => {
   function sortTable() {
     const sortColumn = columns.find(({ sort }) => sort !== null);
 
-    const sort = sortColumn ? sortColumn.sort : 'ascending';
+    if (!sortColumn) return;
+
+    const { name, type, sort } = sortColumn;
 
     data.sort((a, b) => {
-      if (sortColumn) {
-        const { name, type } = sortColumn;
-
-        switch (type) {
-          case 'numeric': {
-            const v1 = a.isCluster ? a.values[name].median : a.values[name];
-            const v2 = b.isCluster ? b.values[name].median : b.values[name];
-        
-            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
-          }
-
-          case 'categorical': {
-            const v1 = a.isCluster ? a.values[name].counts[0].value : a.values[name];
-            const v2 = b.isCluster ? b.values[name].counts[0].value : b.values[name];
-        
-            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
-          }
-
-          case 'id': {
-            return 0;
-          }
-
-          default: 
-            console.log('Invalid column type');
+      switch (type) {
+        case 'numeric': {
+          const v1 = a.isCluster ? a.values[name].median : a.values[name];
+          const v2 = b.isCluster ? b.values[name].median : b.values[name];
+      
+          return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
         }
-      }
-      else {
-        return d3[sort](a.initialIndex, b.initialIndex);
+
+        case 'categorical': {
+          const v1 = a.isCluster ? a.values[name].counts[0].value : a.values[name];
+          const v2 = b.isCluster ? b.values[name].counts[0].value : b.values[name];
+      
+          return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+        }
+
+        case 'id': {
+          const v1 = a.isCluster ? a.values[name].counts[0].value : a.values[name];
+          const v2 = b.isCluster ? b.values[name].counts[0].value : b.values[name];
+      
+          return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+        }
+
+        default: 
+          console.log('Invalid column type');
+          return 0;
       }
     });
   }
@@ -430,11 +431,16 @@ export const digestable = () => {
     const px = paddingX + 'px';
     const py = paddingY + 'px';
 
-    const sortIcon = sort => (
-      sort === 'ascending' ? '↓' :
-      sort === 'descending' ? '↑' :
-      '↕'
+    const clusterIcon = cluster => (
+      cluster === 'ascending' ? '⇓' :
+      cluster === 'descending' ? '⇑' :
+      '⇕'
     );
+
+    const sortIcon = sort => sort === 'ascending' ? '⇣' : '⇡';    
+
+    const clusterColumn = columns.find(({ cluster }) => cluster);
+    const showSortButtons = applySimplification && clusterColumn && clusterColumn.type === 'categorical';
 
     // Reset svg widths for proper column width sizing
     table.selectAll('svg').attr('width', 0);
@@ -485,26 +491,6 @@ export const digestable = () => {
             
             nameDiv.append('div')                
               .text(d => d.name);
-            
-            // Only show cluster button for non-id dimensions
-            nameDiv.each(function(column) {
-              d3.select(this).selectAll('.clusterButton')
-                .data(column.type === 'id' ? [] : [column])
-                .join(
-                  enter => enter.append('button')
-                    .attr('class', 'headerButton clusterButton')
-                    .text('⎶')
-                    .on('click', (evt, d) => {
-                      clusterByColumn(d);
-                      sortByColumn(d);
-                      processData();
-                      sortTable();
-                      drawTable();
-
-                      dispatcher.call('clusterByColumn', this, d);
-                    })
-                );
-            });
                       
             nameDiv.append('button')
               .attr('class', 'headerButton sortButton')
@@ -512,6 +498,17 @@ export const digestable = () => {
                 sortByColumn(d);
                 sortTable();
                 drawTable();
+              });
+            
+            nameDiv.append('button')
+              .attr('class', 'headerButton clusterButton')
+              .on('click', (evt, d) => {
+                clusterByColumn(d);
+                processData();
+                sortTable();
+                drawTable();
+
+                dispatcher.call('clusterByColumn', this, d);
               });
 
             div.append('div')
@@ -524,7 +521,7 @@ export const digestable = () => {
             return th;
           }
         )
-        .classed('active', d => d.cluster)
+        .classed('active', d => d.cluster !== null)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
@@ -532,10 +529,12 @@ export const digestable = () => {
 
       // Update buttons
       th.select('.clusterButton')
-        .classed('active', d => d.cluster);
+        .classed('active', d => d.cluster !== null)
+        .text(d => clusterIcon(d.cluster));
 
       th.select('.sortButton')
         .classed('active', d => d.sort !== null)
+        .style('visibility', d => d.cluster === null && showSortButtons ? null : 'hidden')
         .text(d => sortIcon(d.sort));
     };
 
@@ -652,7 +651,7 @@ export const digestable = () => {
                 return td;
               }
             )
-            .classed('active', d => d.cluster)
+            .classed('active', d => d.cluster !== null)
             .style('padding-left', px)
             .style('padding-right', px)
             .style('padding-top', py)
@@ -669,7 +668,7 @@ export const digestable = () => {
                 .html(text(column.type, v, d.isCluster, column.maxDigits));
 
               td.select('.cellDiv').selectAll('.clusterDiv')
-                .data(clustering && column.cluster ? [v] : [])
+                .data(clustering && column.cluster !== null ? [v] : [])
                 .join(
                   enter => {
                     const div = enter.append('div')
@@ -841,7 +840,7 @@ export const digestable = () => {
                 .style('visibility', null);  
 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.cluster).selectAll('.textDiv.notId')
+                table.selectAll('td').filter(d => d === column || d.cluster !== null).selectAll('.textDiv.notId')
                   .style('visibility', null);
               }
 
@@ -850,10 +849,10 @@ export const digestable = () => {
             })
             .on('mouseout', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
-                .style('visibility', d => d.cluster ? null : 'hidden'); 
+                .style('visibility', d => d.cluster !== null ? null : 'hidden'); 
                 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.cluster).selectAll('.textDiv.notId')
+                table.selectAll('td').filter(d => d === column || d.cluster !== null).selectAll('.textDiv.notId')
                   .style('visibility', 'hidden');
               }
 
@@ -899,7 +898,7 @@ export const digestable = () => {
 
       table.selectAll('th').select('.highlight')
         .style('height', `${ height }px`)
-        .style('visibility', d => d.cluster ? null : 'hidden');
+        .style('visibility', d => d.cluster !== null ? null : 'hidden');
     }
   } 
 
@@ -977,12 +976,13 @@ export const digestable = () => {
     const td = table.selectAll('td');
     td.selectAll('.textDiv.notId').style('visibility', textVisibility());
     td.selectAll('svg').style('visibility', visVisibility());
-  } 
+  }
 
   digestable.applySimplification = function(_) {
     if (!arguments.length) return applySimplification;
-    applySimplification = _;
-    if (columns.find(({ sort }) => sort !== null)) {
+    applySimplification = _; 
+    const clusterColumn = columns.find(({ cluster }) => cluster !== null);
+    if (clusterColumn && clusterColumn.type !== 'id') {
       processData();
       sortTable();
       drawTable();
@@ -993,7 +993,7 @@ export const digestable = () => {
   digestable.simplificationMethod = function(_) {
     if (!arguments.length) return simplificationMethod;
     simplificationMethod = _;
-    if (applySimplification) {
+    if (clustering) {
       processData();
       sortTable();
       drawTable();
@@ -1004,7 +1004,7 @@ export const digestable = () => {
   digestable.simplificationAmount = function(_) {
     if (!arguments.length) return simplificationAmount;
     simplificationAmount = _;
-    if (applySimplification) {
+    if (clustering) {
       processData();
       sortTable();
       drawTable();
@@ -1015,7 +1015,7 @@ export const digestable = () => {
   digestable.simplificationRows = function(_) {
     if (!arguments.length) return simplificationRows;
     simplificationRows = _;
-    if (applySimplification) {
+    if (clustering) {
       processData();
       sortTable();
       drawTable();
@@ -1026,7 +1026,7 @@ export const digestable = () => {
   digestable.transformBase = function(_) {
     if (!arguments.length) return transformBase;
     transformBase = _;
-    if (applySimplification) {
+    if (clustering) {
       processData();
       sortTable();
       drawTable();
