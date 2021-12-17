@@ -33,7 +33,7 @@ export const digestable = () => {
       isMissing = d => missingValues.includes(d),
 
       // Event dispatcher
-      dispatcher = d3.dispatch('sortByColumn');
+      dispatcher = d3.dispatch('clusterByColumn');
 
   function digestable(selection) {
     selection.each(function(d) {
@@ -58,8 +58,8 @@ export const digestable = () => {
 
       createColumns(d);      
       createData(d);
-      sortData();
       processData();
+      sortTable();
       drawTable();
     });
   }
@@ -94,6 +94,10 @@ export const digestable = () => {
 
   function clearSorting() {     
     columns.forEach(d => d.sort = null);
+  }
+
+  function clearClustering() {
+    columns.forEach(d => d.cluster = false);
   }
 
   function createColumns(inputData) {
@@ -139,6 +143,7 @@ export const digestable = () => {
     });
 
     clearSorting();
+    clearClustering();
   }
 
   function createData(inputData) {
@@ -198,43 +203,50 @@ export const digestable = () => {
   }
 
   function sortByColumn(column) {    
-    const sort = column.sort === null ? 'descending' :
-      column.sort === 'descending' ? 'ascending' :
-      null;
+    const sort = column.sort === 'descending' ? 'ascending' : 'descending';
     
     clearSorting();
 
     column.sort = sort;
+  }
 
-    sortData();
+  function clusterByColumn(column) {    
+    const cluster = !column.cluster;
+    
+    clearClustering();
+
+    column.cluster = cluster;
   }
 
   function sortData() {
-    const sortColumn = columns.find(({ sort }) => sort !== null);
+    const clusterColumn = columns.find(({ cluster }) => cluster);
 
-    const sort = sortColumn ? sortColumn.sort : 'ascending';
+    //const sort = sortColumn ? sortColumn.sort : 'ascending';
+    const sort = 'ascending';
 
     allData.sort((a, b) => {
-      const v1 = sortColumn ? a.values[sortColumn.name] : a.initialIndex;
-      const v2 = sortColumn ? b.values[sortColumn.name] : b.initialIndex;
+      const v1 = clusterColumn ? a.values[clusterColumn.name] : a.initialIndex;
+      const v2 = clusterColumn ? b.values[clusterColumn.name] : b.initialIndex;
 
       return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
     });
   }
 
   function processData() {
+    sortData();
+
     // Clear expanded
     allData.forEach(d => d.expanded = false);
 
-    const sortColumn = columns.find(({ sort }) => sort !== null);
+    const clusterColumn = columns.find(({ cluster }) => cluster);
 
     // Initialize categorical and id column counts
     columns.filter(({ type }) => type !== 'numeric').forEach(column => column.maxCount = 1);
 
-    clustering = applySimplification && sortColumn && sortColumn.type !== 'id';
+    clustering = applySimplification && clusterColumn && clusterColumn.type !== 'id';
 
     if (clustering) {
-      const { name, type, sort } = sortColumn;
+      const { name, type, sort } = clusterColumn;
 
       const values = allData.map(d => d.values[name]);
 
@@ -376,6 +388,44 @@ export const digestable = () => {
     }
   }
 
+  function sortTable() {
+    const sortColumn = columns.find(({ sort }) => sort !== null);
+
+    const sort = sortColumn ? sortColumn.sort : 'ascending';
+
+    data.sort((a, b) => {
+      if (sortColumn) {
+        const { name, type } = sortColumn;
+
+        switch (type) {
+          case 'numeric': {
+            const v1 = a.isCluster ? a.values[name].median : a.values[name];
+            const v2 = b.isCluster ? b.values[name].median : b.values[name];
+        
+            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          }
+
+          case 'categorical': {
+            const v1 = a.isCluster ? a.values[name].counts[0].value : a.values[name];
+            const v2 = b.isCluster ? b.values[name].counts[0].value : b.values[name];
+        
+            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          }
+
+          case 'id': {
+            return 0;
+          }
+
+          default: 
+            console.log('Invalid column type');
+        }
+      }
+      else {
+        return d3[sort](a.initialIndex, b.initialIndex);
+      }
+    });
+  }
+
   function drawTable() {
     const px = paddingX + 'px';
     const py = paddingY + 'px';
@@ -435,15 +485,33 @@ export const digestable = () => {
             
             nameDiv.append('div')                
               .text(d => d.name);
+            
+            // Only show cluster button for non-id dimensions
+            nameDiv.each(function(column) {
+              d3.select(this).selectAll('.clusterButton')
+                .data(column.type === 'id' ? [] : [column])
+                .join(
+                  enter => enter.append('button')
+                    .attr('class', 'headerButton clusterButton')
+                    .text('⎶')
+                    .on('click', (evt, d) => {
+                      clusterByColumn(d);
+                      sortByColumn(d);
+                      processData();
+                      sortTable();
+                      drawTable();
+
+                      dispatcher.call('clusterByColumn', this, d);
+                    })
+                );
+            });
                       
             nameDiv.append('button')
-              .attr('class', 'sortButton')
+              .attr('class', 'headerButton sortButton')
               .on('click', (evt, d) => {
                 sortByColumn(d);
-                processData();
+                sortTable();
                 drawTable();
-
-                dispatcher.call('sortByColumn', this, d);
               });
 
             div.append('div')
@@ -456,13 +524,16 @@ export const digestable = () => {
             return th;
           }
         )
-        .classed('active', d => d.sort !== null)
+        .classed('active', d => d.cluster)
         .style('padding-left', px)
         .style('padding-right', px)
         .style('padding-top', py)
         .style('padding-bottom', py);
 
-      // Update button
+      // Update buttons
+      th.select('.clusterButton')
+        .classed('active', d => d.cluster);
+
       th.select('.sortButton')
         .classed('active', d => d.sort !== null)
         .text(d => sortIcon(d.sort));
@@ -581,7 +652,7 @@ export const digestable = () => {
                 return td;
               }
             )
-            .classed('active', d => d.sort !== null)
+            .classed('active', d => d.cluster)
             .style('padding-left', px)
             .style('padding-right', px)
             .style('padding-top', py)
@@ -598,7 +669,7 @@ export const digestable = () => {
                 .html(text(column.type, v, d.isCluster, column.maxDigits));
 
               td.select('.cellDiv').selectAll('.clusterDiv')
-                .data(clustering && column.sort !== null ? [v] : [])
+                .data(clustering && column.cluster ? [v] : [])
                 .join(
                   enter => {
                     const div = enter.append('div')
@@ -770,7 +841,7 @@ export const digestable = () => {
                 .style('visibility', null);  
 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
+                table.selectAll('td').filter(d => d === column || d.cluster).selectAll('.textDiv.notId')
                   .style('visibility', null);
               }
 
@@ -779,10 +850,10 @@ export const digestable = () => {
             })
             .on('mouseout', function(evt, column) {
               table.selectAll('th').filter(d => d === column).select('.highlight')
-                .style('visibility', d => d.sort === null ? 'hidden' : null); 
+                .style('visibility', d => d.cluster ? null : 'hidden'); 
                 
               if (visualizationMode === 'interactive') {
-                table.selectAll('td').filter(d => d === column || d.sort !== null).selectAll('.textDiv.notId')
+                table.selectAll('td').filter(d => d === column || d.cluster).selectAll('.textDiv.notId')
                   .style('visibility', 'hidden');
               }
 
@@ -828,7 +899,7 @@ export const digestable = () => {
 
       table.selectAll('th').select('.highlight')
         .style('height', `${ height }px`)
-        .style('visibility', d => d.sort === null ? 'hidden' : null);
+        .style('visibility', d => d.cluster ? null : 'hidden');
     }
   } 
 
@@ -913,6 +984,7 @@ export const digestable = () => {
     applySimplification = _;
     if (columns.find(({ sort }) => sort !== null)) {
       processData();
+      sortTable();
       drawTable();
     }
     return digestable;
@@ -923,6 +995,7 @@ export const digestable = () => {
     simplificationMethod = _;
     if (applySimplification) {
       processData();
+      sortTable();
       drawTable();
     }
     return digestable;
@@ -933,6 +1006,7 @@ export const digestable = () => {
     simplificationAmount = _;
     if (applySimplification) {
       processData();
+      sortTable();
       drawTable();
     }
     return digestable;
@@ -943,6 +1017,7 @@ export const digestable = () => {
     simplificationRows = _;
     if (applySimplification) {
       processData();
+      sortTable();
       drawTable();
     }
     return digestable;
@@ -953,6 +1028,7 @@ export const digestable = () => {
     transformBase = _;
     if (applySimplification) {
       processData();
+      sortTable();
       drawTable();
     }
     return digestable;

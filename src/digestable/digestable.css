@@ -44,7 +44,11 @@ td .headerDiv {
 
 th .nameDiv {
   display: flex;
-  justify-content: space-between;
+}
+
+th .nameDiv > div {
+  flex: 1 0 0;
+  margin-right: 1em;
 }
 
 th .info {
@@ -103,17 +107,21 @@ td .visDiv {
   display: flex;
 }
 
-.sortButton {
+.headerButton {
+  flex: 0 1 auto;
   display: inline-block;
   border: none;
   border-radius: 5px;
   padding-block: 0px;
-  margin-left: .5em;
   color: rgba(0, 0, 0, 0.5);
   background-color: rgba(0, 0, 0, 0);
 }
 
-.sortButton:hover {
+.headerButton:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.headerButton.active {
   background-color: rgba(0, 0, 0, 0.1);
 }
 

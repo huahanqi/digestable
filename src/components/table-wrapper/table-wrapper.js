@@ -28,7 +28,7 @@ export const TableWrapper = ({ data }) => {
         .transformBase(transformBase)
         .visualizationMode(mode)
         .categoryScaling(categoryScaling)
-        .on('sortByColumn', column => {
+        .on('clusterByColumn', column => {
           simplifyDispatch({ 
             type: 'setColumnInfo', 
             columnType: column.type, 
