@@ -56,7 +56,7 @@ export const App = () => {
       <Navbar bg='dark' variant='dark'>
         <Brand className='ms-2'>
           <img 
-            src='digestable_512.png' 
+            src='/digestable_512.png' 
             alt='digestable logo'
             height='32px'
             className='me-1'              
