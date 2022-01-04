@@ -9,8 +9,8 @@ const { Brand } = Navbar;
 const { Group, Control, Select } = Form;
 
 const datasets = [
-  { name: 'MT Cars', url: 'data/mtcars.csv' },
-  { name: 'NFL Combine 2017', url: 'data/NFL Combine 2017.csv' }
+  { name: 'MT Cars', url: '/digestable/data/mtcars.csv' },
+  { name: 'NFL Combine 2017', url: '/digestable/data/NFL Combine 2017.csv' }
 ];
 
 export const App = () => {
@@ -56,7 +56,7 @@ export const App = () => {
       <Navbar bg='dark' variant='dark'>
         <Brand className='ms-2'>
           <img 
-            src='digestable_512.png' 
+            src='/digestable/digestable_512.png' 
             alt='digestable logo'
             height='32px'
             className='me-1'              
