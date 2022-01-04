@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Form, FloatingLabel, Card } from 'react-bootstrap';
 import { SimplifyContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
@@ -32,7 +32,7 @@ export const SimplifyControls = () => {
   };
 
   return (
-    <ControlPanel title="Simplification">
+    <ControlPanel title="Simplification" subtitle={ `${ columnType } column` }>
       <Group>
         <Check 
           type='checkbox' 
@@ -44,62 +44,64 @@ export const SimplifyControls = () => {
           onChange={ onApplyChange }
         />
       </Group>
-      <Group>
-        <FloatingLabel label="Method">
-          <Select 
-            value={ method.name }
-            disabled={ columnType !== 'numeric' }
-            onChange={ onMethodChange }
-          >
-            { methods.map(({ name }, i) => (
-                <option 
-                  key={ i } 
-                  value={ name }
-                >
-                  { name }
-                </option>
-              ))
-            }
-          </Select>
-        </FloatingLabel>
-      </Group>
-      { method.type === 'amount' ?
-        <Group>
-          <Label>Amount</Label>
-          <Range 
-            min={ 0 }
-            max={ 100 }
-            step={ 1 }
-            value={ amount * 100 }
-            disabled={ columnType !== 'numeric' }
-            onChange={ onAmountChange }
-          />        
-        </Group>
-      :
-        <Group>
-          <Label >Number of rows</Label>
-          <Control
-            type='number'
-            min={ 1 }
-            max={ unique }
-            step={ 1 }
-            value={ rows }
-            disabled={ columnType !== 'numeric' }
-            onChange={ onRowsChange }
-          />        
-        </Group>
-      }
-      { method.transform && 
-        <Group>
-          <Label>Depth weight</Label>
-          <Range 
-            min={ 100 }
-            max={ 400 }
-            step={ 1 }
-            value={ transformBase * 100 }
-            onChange={ onTransformBaseChange }
-          />        
-        </Group>
+      { columnType == 'numeric' &&
+        <>
+          <Group>
+            <Label>numeric column:</Label>
+            <FloatingLabel label="Method">
+              <Select 
+                value={ method.name }
+                onChange={ onMethodChange }
+              >
+                { methods.map(({ name }, i) => (
+                    <option 
+                      key={ i } 
+                      value={ name }
+                    >
+                      { name }
+                    </option>
+                  ))
+                }
+              </Select>
+            </FloatingLabel>
+          </Group>
+          { method.type === 'amount' ?
+            <Group>
+              <Label>Amount</Label>
+              <Range 
+                min={ 0 }
+                max={ 100 }
+                step={ 1 }
+                value={ amount * 100 }
+                onChange={ onAmountChange }
+              />        
+            </Group>
+          :
+            <Group>
+              <Label >Number of rows</Label>
+              <Control
+                type='number'
+                min={ 1 }
+                max={ unique }
+                step={ 1 }
+                value={ rows }
+                onChange={ onRowsChange }
+              />        
+            </Group>
+          }
+          { method.transform && 
+            <Group>
+              <Label>Depth weight</Label>
+              <Range 
+                min={ 100 }
+                max={ 400 }
+                step={ 1 }
+                value={ transformBase * 100 }
+                onChange={ onTransformBaseChange }
+              />        
+            </Group>
+          }
+        </>
       }
     </ControlPanel>
   );
