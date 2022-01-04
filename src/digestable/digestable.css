@@ -149,6 +149,10 @@ td .categories .others {
   color: #999;
 }
 
+td .categories .others.none {
+  visibility: hidden;
+}
+
 td .clusterSize {
   font-size: x-small;
   color: #999;
