@@ -105,6 +105,9 @@ export const digestable = () => {
 
     // Determine column types and set column info
     columns.forEach(column => {
+
+      console.log(column.name);
+
       const { name } = column;
       const values = inputData.map(d => d[name]);
       const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
@@ -133,7 +136,7 @@ export const digestable = () => {
         }
 
         if (column.type === 'numeric') {
-          column.values = numbers;
+          column.values = values.filter(value => !isMissing(value));
           column.extent = d3.extent(numbers);
           column.maxDigits = d3.max(numbers, significantDigits);
         }
@@ -587,7 +590,7 @@ export const digestable = () => {
                   const bin = d3.bin()
                     .domain(xScale.domain());
 
-                  const bins = bin(column.values);                    
+                  const bins = bin(column.values);
 
                   const yScale = d3.scaleLinear()
                     .domain([0, d3.max(bins, d => d.length)])
