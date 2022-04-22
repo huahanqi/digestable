@@ -105,9 +105,6 @@ export const digestable = () => {
 
     // Determine column types and set column info
     columns.forEach(column => {
-
-      console.log(column.name);
-
       const { name } = column;
       const values = inputData.map(d => d[name]);
       const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
@@ -318,7 +315,7 @@ export const digestable = () => {
               row.values[name] = null;
             }
           }
-          else {
+          else if (type === 'categorical') {
             const values = cluster.map(i => allData[i].values[name]);
 
             if (values.length > 0) {
@@ -333,6 +330,23 @@ export const digestable = () => {
             else {
               row.values[name] = null;
             }
+          }
+          else if (type === 'id') {
+            const values = cluster.map(i => allData[i].values[name]);
+
+            if (values.length > 0) {
+              const counts = values.map(value => ({ value: value, count: 1 }));
+
+              row.values[name] = {
+                counts: counts
+              };
+            }
+            else {
+              row.values[name] = null;
+            }
+          }
+          else {
+            console.warn('Unknown column type: ' + type);
           }
         });
 
