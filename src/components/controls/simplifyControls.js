@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Form, FloatingLabel, Card } from 'react-bootstrap';
+import { Form, FloatingLabel } from 'react-bootstrap';
 import { SimplifyContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
@@ -32,7 +32,7 @@ export const SimplifyControls = () => {
   };
 
   return (
-    <ControlPanel title="Simplification" subtitle={ `${ columnType } column` }>
+    <ControlPanel title='Simplification' subtitle={ `${ columnType } column` }>
       <Group>
         <Check 
           type='checkbox' 
@@ -44,11 +44,11 @@ export const SimplifyControls = () => {
           onChange={ onApplyChange }
         />
       </Group>
-      { columnType == 'numeric' &&
+      { columnType === 'numeric' &&
         <>
           <Group>
             <Label>numeric column:</Label>
-            <FloatingLabel label="Method">
+            <FloatingLabel label='Method'>
               <Select 
                 value={ method.name }
                 onChange={ onMethodChange }
