@@ -421,7 +421,7 @@ export const digestable = () => {
 
     if (!sortColumn) return;
 
-    const { name, type, sort } = sortColumn;
+    const { name, type, sort, cluster } = sortColumn;
 
     data.sort((a, b) => {
       switch (type) {
@@ -433,10 +433,18 @@ export const digestable = () => {
         }
 
         case 'categorical': {
-          const v1 = a.isCluster ? a.values[name].counts[0].count / a.size : a.values[name];
-          const v2 = b.isCluster ? b.values[name].counts[0].count / b.size : b.values[name];
-      
-          return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          if (cluster) {
+            const v1 = a.isCluster ? a.values[name].counts[0].count : a.values[name] ? 1 : null;
+            const v2 = b.isCluster ? b.values[name].counts[0].count : b.values[name] ? 1 : null;
+        
+            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          }
+          else {
+            const v1 = a.isCluster ? a.values[name].counts[0].count / a.size : a.values[name];
+            const v2 = b.isCluster ? b.values[name].counts[0].count / b.size : b.values[name];
+        
+            return v1 === v2 ? 0 : v1 === null ? 1 : v2 === null ? -1 : d3[sort](v1, v2);
+          }
         }
 
         case 'id': {
@@ -579,7 +587,7 @@ export const digestable = () => {
 
       th.select('.sortButton')
         .classed('active', d => d.sort !== null)
-        .style('visibility', d => d.cluster === null && showSortButtons ? null : 'hidden')
+        .style('visibility', d => showSortButtons ? null : 'hidden')
         .text(d => sortIcon(d.sort));
 
       // Separate out the visualization update so we have an accurate width after rendering textual elements
