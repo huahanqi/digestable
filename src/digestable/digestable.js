@@ -110,12 +110,11 @@ export const digestable = () => {
       const uniqueValues = Array.from(values.reduce((values, d) => values.add(d), new Set()));
       const validValues = uniqueValues.filter(value => !isMissing(value));
       const numeric = validValues.reduce((numeric, value) => numeric && !isNaN(value), true);
+      const numbers = numeric ? validValues.map(d => +d) : null;
 
       column.uniqueValues = uniqueValues;
 
       if (numeric) {        
-        const numbers = validValues.map(d => +d);
-
         if (numbers.length === inputData.length) {
           // Heuristic to check for integer ID type
           numbers.sort((a, b) => d3.ascending(a, b));
@@ -131,23 +130,23 @@ export const digestable = () => {
         else {
           column.type = 'numeric';            
         }
-
-        if (column.type === 'numeric') {
-          column.values = values.filter(value => !isMissing(value));
-          column.extent = d3.extent(numbers);
-          column.maxDigits = d3.max(numbers, significantDigits);
-        }
-        else if (column.type === 'categorical') {
-          column.type = 'categorical';        
-          column.counts = getCounts(uniqueValues, values);
-        }
       }
       else if (uniqueValues.length === inputData.length) {
         column.type = 'id';        
       }
       else {
+        column.type = 'categorical';
+      } 
+
+      if (column.type === 'numeric') {
+        column.values = values.filter(value => !isMissing(value));
+        column.extent = d3.extent(numbers);
+        column.maxDigits = d3.max(numbers, significantDigits);
+      }
+      else if (column.type === 'categorical') {
         column.type = 'categorical';        
-        column.counts = getCounts(uniqueValues, values);
+        column.counts = getCounts(uniqueValues, values).sort((a, b) => b.count - a.count);    
+        column.uniqueValues = column.counts.map(({ value }) => value);
       }
     });
 
