@@ -15,7 +15,7 @@ export const TableWrapper = ({ data }) => {
   );
   const divRef = useRef();
   const digestableRef = useRef();
-  //const OuterDivRef = useRef();
+  const OuterDivRef = useRef();
 
   // Scroll callback
   const onScroll = useScrollHook(
@@ -24,7 +24,7 @@ export const TableWrapper = ({ data }) => {
         digestableRef.current.updateLinks();
       }
     },
-    divRef,
+    OuterDivRef,
     'horizontal'
   );
 
@@ -128,15 +128,15 @@ export const TableWrapper = ({ data }) => {
     );
   };
   return (
-    <div>
-      <div
-        ref={divRef}
-        style={{
-          height: '100%',
-          overflow: 'auto',
-        }}
-        onScroll={onScroll}
-      ></div>
+    <div
+      ref={OuterDivRef}
+      onScroll={onScroll}
+      style={{
+        height: '100%',
+        overflow: 'auto',
+      }}
+    >
+      <div ref={divRef}></div>
       {apply ? <div></div> : <Footer loadMore={loadMore} />}
     </div>
   );
