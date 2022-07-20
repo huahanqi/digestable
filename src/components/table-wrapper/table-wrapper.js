@@ -108,13 +108,22 @@ export const TableWrapper = ({ data }) => {
     }
   }, [categoryScaling]);
 
+  //load-more parameter
+
+  // initial check
+  useEffect(() => {
+    if (digestableRef.current && digestableRef.current.isFullData()) {
+      setIsFullData(true);
+    }
+  }, []);
+
+  // click event
   const loadMore = () => {
     if (digestableRef.current) {
       digestableRef.current.loadMore();
       if (digestableRef.current.isFullData()) {
         setIsFullData(true);
       }
-      //console.log(isFullData);
     }
   };
 
