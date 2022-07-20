@@ -129,9 +129,7 @@ export const TableWrapper = ({ data }) => {
         }}
       >
         <Button disabled={isFullData} onClick={loadMore}>
-          {isFullData
-            ? 'You have reached the end of data'
-            : 'Press to load more'}
+          {isFullData ? 'End of Data' : 'Load More'}
         </Button>
       </Container>
     );

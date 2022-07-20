@@ -35,7 +35,7 @@ export const digestable = () => {
     // Event dispatcher
     dispatcher = d3.dispatch('clusterByColumn'),
     // load more data parameters
-    addMoreData = 20,
+    addMoreData = 40,
     isFullData = false;
 
   function digestable(selection) {
@@ -402,6 +402,7 @@ export const digestable = () => {
         data = [...allData].slice(0, addMoreData);
       } else {
         data = [...allData];
+        isFullData = true;
       }
     }
 
@@ -1424,7 +1425,7 @@ export const digestable = () => {
   };
 
   function loadMoreData() {
-    addMoreData += 20;
+    addMoreData += 40;
     if (addMoreData < [...allData].length) {
       data = [...allData].slice(0, addMoreData);
     } else {
