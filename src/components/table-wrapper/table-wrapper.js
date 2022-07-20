@@ -1,4 +1,4 @@
-import { useContext, useRef, useEffect } from 'react';
+import { useContext, useRef, useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { useScrollHook } from '../../hooks';
@@ -16,6 +16,8 @@ export const TableWrapper = ({ data }) => {
   const divRef = useRef();
   const digestableRef = useRef();
   const OuterDivRef = useRef();
+
+  const [isFullData, setIsFullData] = useState(false);
 
   // Scroll callback
   const onScroll = useScrollHook(
@@ -109,11 +111,14 @@ export const TableWrapper = ({ data }) => {
   const loadMore = () => {
     if (digestableRef.current) {
       digestableRef.current.loadMore();
-      //console.log('loadmore test');
+      if (digestableRef.current.isFullData()) {
+        setIsFullData(true);
+      }
+      //console.log(isFullData);
     }
   };
 
-  const Footer = ({ loadMore }) => {
+  const Footer = ({ loadMore, isFullData }) => {
     return (
       <Container
         style={{
@@ -123,7 +128,11 @@ export const TableWrapper = ({ data }) => {
           position: 'relative',
         }}
       >
-        <Button onClick={loadMore}>Press to load more</Button>
+        <Button disabled={isFullData} onClick={loadMore}>
+          {isFullData
+            ? 'You have reached the end of data'
+            : 'Press to load more'}
+        </Button>
       </Container>
     );
   };
@@ -137,7 +146,11 @@ export const TableWrapper = ({ data }) => {
       }}
     >
       <div ref={divRef}></div>
-      {apply ? <div></div> : <Footer loadMore={loadMore} />}
+      {apply ? (
+        <div></div>
+      ) : (
+        <Footer loadMore={loadMore} isFullData={isFullData} />
+      )}
     </div>
   );
 };

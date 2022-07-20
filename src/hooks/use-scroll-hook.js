@@ -4,8 +4,7 @@ export const useScrollHook = (callback, divRef, scrollType) => {
   const x = useRef(0);
   const y = useRef(0);
   const ticking = useRef(false);
-  console.log('here');
-  console.log(divRef.current);
+
   return () => {
     if (!divRef.current) return;
 

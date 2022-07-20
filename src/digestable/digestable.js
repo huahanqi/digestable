@@ -34,7 +34,9 @@ export const digestable = () => {
     isMissing = (d) => missingValues.includes(d),
     // Event dispatcher
     dispatcher = d3.dispatch('clusterByColumn'),
-    addMoreData = 20;
+    // load more data parameters
+    addMoreData = 20,
+    isFullData = false;
 
   function digestable(selection) {
     selection.each(function(d) {
@@ -1426,6 +1428,7 @@ export const digestable = () => {
     if (addMoreData < [...allData].length) {
       data = [...allData].slice(0, addMoreData);
     } else {
+      isFullData = true;
       data = [...allData];
     }
     drawTable();
@@ -1435,6 +1438,10 @@ export const digestable = () => {
     loadMoreData();
     //console.log('digestable test');
     return digestable;
+  };
+
+  digestable.isFullData = function() {
+    return isFullData;
   };
 
   return digestable;
