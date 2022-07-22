@@ -3,7 +3,8 @@ import * as d3 from 'd3';
 import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { useScrollHook } from '../../hooks';
 import { digestable } from '../../digestable';
-import { Container, Button } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+//import { index } from 'd3';
 
 export const TableWrapper = ({ data }) => {
   const [
@@ -129,18 +130,21 @@ export const TableWrapper = ({ data }) => {
 
   const Footer = ({ loadMore, isFullData }) => {
     return (
-      <Container
+      <div
         style={{
           padding: '2rem',
           display: 'flex',
           justifyContent: 'center',
-          position: 'relative',
+          position: 'sticky',
+          left: '0',
+          zIndex: '3',
+          backgroundColor: 'white',
         }}
       >
         <Button disabled={isFullData} onClick={loadMore}>
           {isFullData ? 'End of Data' : 'Load More'}
         </Button>
-      </Container>
+      </div>
     );
   };
   return (
