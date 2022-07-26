@@ -141,7 +141,11 @@ export const TableWrapper = ({ data }) => {
           backgroundColor: 'white',
         }}
       >
-        <Button disabled={isFullData} onClick={loadMore}>
+        <Button
+          disabled={isFullData}
+          onClick={loadMore}
+          style={{ marginLeft: '2rem' }}
+        >
           {isFullData ? 'End of Data' : 'Load More'}
         </Button>
       </div>

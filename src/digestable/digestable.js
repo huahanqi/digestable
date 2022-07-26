@@ -35,7 +35,7 @@ export const digestable = () => {
     // Event dispatcher
     dispatcher = d3.dispatch('clusterByColumn'),
     // load more data parameters
-    addMoreData = 40,
+    addMoreData = 20,
     isFullData = false;
 
   function digestable(selection) {
@@ -1256,12 +1256,15 @@ export const digestable = () => {
   function drawLinks() {
     if (!table.node()) return;
 
+    linkSvg.style('display', showLinks ? null : 'none');
+    if (!showLinks) return;
+
     if (relations.length === 0) {
       computeRelations();
     }
 
-    linkSvg.style('display', showLinks ? null : 'none');
-    if (!showLinks) return;
+    // linkSvg.style('display', showLinks ? null : 'none');
+    // if (!showLinks) return;
 
     const width = table.node().offsetWidth;
     const height = 200;
@@ -1425,7 +1428,7 @@ export const digestable = () => {
   };
 
   function loadMoreData() {
-    addMoreData += 40;
+    addMoreData += 20;
     if (addMoreData < [...allData].length) {
       data = [...allData].slice(0, addMoreData);
     } else {
