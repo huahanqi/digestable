@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { useScrollHook } from '../../hooks';
 import { digestable } from '../../digestable';
-import { Button } from 'react-bootstrap';
+import { Button, Form, Row, Col } from 'react-bootstrap';
 //import { index } from 'd3';
 
 export const TableWrapper = ({ data }) => {
@@ -141,9 +141,22 @@ export const TableWrapper = ({ data }) => {
           backgroundColor: 'white',
         }}
       >
-        <Button disabled={isFullData} onClick={loadMore}>
-          {isFullData ? 'End of Data' : 'Load More'}
-        </Button>
+        <Form>
+          <Row>
+            <Col xs='auto'>
+              <Form.Control type='number' placeholder='Number of rows' />
+            </Col>
+            <Col xs='auto'>
+              <Button
+                disabled={isFullData}
+                onClick={loadMore}
+                style={{ marginLeft: '1rem' }}
+              >
+                {isFullData ? 'End of Data' : 'Load More'}
+              </Button>
+            </Col>
+          </Row>
+        </Form>
       </div>
     );
   };
