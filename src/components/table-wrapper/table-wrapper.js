@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { useScrollHook } from '../../hooks';
 import { digestable } from '../../digestable';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import Footer from './Footer';
 //import { index } from 'd3';
 
 export const TableWrapper = ({ data }) => {
@@ -19,7 +19,7 @@ export const TableWrapper = ({ data }) => {
   const OuterDivRef = useRef();
 
   const [isFullData, setIsFullData] = useState(false);
-
+  const [rowNum, setRowNum] = useState('');
   // Scroll callback
   const onScroll = useScrollHook(
     () => {
@@ -128,38 +128,6 @@ export const TableWrapper = ({ data }) => {
     }
   };
 
-  const Footer = ({ loadMore, isFullData }) => {
-    return (
-      <div
-        style={{
-          padding: '2rem',
-          display: 'flex',
-          justifyContent: 'center',
-          position: 'sticky',
-          left: '0',
-          zIndex: '3',
-          backgroundColor: 'white',
-        }}
-      >
-        <Form>
-          <Row>
-            <Col xs='auto'>
-              <Form.Control type='number' placeholder='Number of rows' />
-            </Col>
-            <Col xs='auto'>
-              <Button
-                disabled={isFullData}
-                onClick={loadMore}
-                style={{ marginLeft: '1rem' }}
-              >
-                {isFullData ? 'End of Data' : 'Load More'}
-              </Button>
-            </Col>
-          </Row>
-        </Form>
-      </div>
-    );
-  };
   return (
     <div
       ref={OuterDivRef}
@@ -173,7 +141,13 @@ export const TableWrapper = ({ data }) => {
       {apply ? (
         <div></div>
       ) : (
-        <Footer loadMore={loadMore} isFullData={isFullData} />
+        <Footer
+          loadMore={loadMore}
+          isFullData={isFullData}
+          setIsFullData={setIsFullData}
+          rowNum={rowNum}
+          setRowNum={setRowNum}
+        />
       )}
     </div>
   );
