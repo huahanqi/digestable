@@ -1427,8 +1427,8 @@ export const digestable = () => {
     return value === dispatcher ? digestable : value;
   };
 
-  function loadMoreData() {
-    addMoreData += 20;
+  function loadMoreData(rowNum) {
+    addMoreData = rowNum;
     if (addMoreData < [...allData].length) {
       data = [...allData].slice(0, addMoreData);
     } else {
@@ -1438,14 +1438,18 @@ export const digestable = () => {
     drawTable();
   }
 
-  digestable.loadMore = function() {
-    loadMoreData();
+  digestable.loadMore = function(rowNum) {
+    loadMoreData(rowNum);
     //console.log('digestable test');
     return digestable;
   };
 
   digestable.isFullData = function() {
     return isFullData;
+  };
+
+  digestable.fullDataLength = function() {
+    return [...allData].length;
   };
 
   return digestable;

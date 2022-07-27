@@ -18,6 +18,8 @@ export const TableWrapper = ({ data }) => {
   const digestableRef = useRef();
   const OuterDivRef = useRef();
 
+  // parameters for load more
+
   const [isFullData, setIsFullData] = useState(false);
   const [rowNum, setRowNum] = useState('');
   // Scroll callback
@@ -119,15 +121,16 @@ export const TableWrapper = ({ data }) => {
   }, []);
 
   // click event
-  const loadMore = () => {
+  const loadMore = (rowNum) => {
     if (digestableRef.current) {
-      digestableRef.current.loadMore();
+      digestableRef.current.loadMore(rowNum);
       if (digestableRef.current.isFullData()) {
         setIsFullData(true);
       }
     }
   };
 
+  const max = digestableRef.current && digestableRef.current.fullDataLength();
   return (
     <div
       ref={OuterDivRef}
@@ -144,9 +147,9 @@ export const TableWrapper = ({ data }) => {
         <Footer
           loadMore={loadMore}
           isFullData={isFullData}
-          setIsFullData={setIsFullData}
           rowNum={rowNum}
           setRowNum={setRowNum}
+          max={max}
         />
       )}
     </div>
