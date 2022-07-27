@@ -26,7 +26,7 @@ const Footer = ({ loadMore, isFullData, rowNum, setRowNum, max }) => {
               style={{ width: '12rem' }}
               type='number'
               placeholder='Number of Rows'
-              min='0'
+              min='1'
               max={max}
               value={rowNum}
               onChange={(e) => setRowNum(e.target.value)}
@@ -41,7 +41,7 @@ const Footer = ({ loadMore, isFullData, rowNum, setRowNum, max }) => {
               }}
               type='submit'
             >
-              {isFullData ? 'End of Data' : 'Load More'}
+              {isFullData ? 'End of Data' : 'Load Data'}
             </Button>
           </Col>
         </Row>
