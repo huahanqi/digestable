@@ -210,39 +210,39 @@ export const digestable = () => {
     });
   }
 
-  function computeRelations() {
-    // Compute relations
-    relations = columns.reduce((relations, column1, i, a) => {
-      const v1 = allData.map((d) => d.values[column1.name]);
+  // function computeRelations() {
+  //   // Compute relations
+  //   relations = columns.reduce((relations, column1, i, a) => {
+  //     const v1 = allData.map((d) => d.values[column1.name]);
 
-      for (let j = i + 1; j < a.length; j++) {
-        const column2 = a[j];
-        const v2 = allData.map((d) => d.values[column2.name]);
+  //     for (let j = i + 1; j < a.length; j++) {
+  //       const column2 = a[j];
+  //       const v2 = allData.map((d) => d.values[column2.name]);
 
-        const value =
-          column1.type === 'id' || column2.type === 'id'
-            ? 0
-            : column1.type === 'categorical' && column2.type === 'categorical'
-            ? cramersV(v1, v2)
-            : column1.type === 'categorical' && column2.type === 'numeric'
-            ? categoricalRegression(v1, v2)
-            : column1.type === 'numeric' && column2.type === 'categorical'
-            ? categoricalRegression(v2, v1)
-            : correlation(v1, v2);
+  //       const value =
+  //         column1.type === 'id' || column2.type === 'id'
+  //           ? 0
+  //           : column1.type === 'categorical' && column2.type === 'categorical'
+  //           ? cramersV(v1, v2)
+  //           : column1.type === 'categorical' && column2.type === 'numeric'
+  //           ? categoricalRegression(v1, v2)
+  //           : column1.type === 'numeric' && column2.type === 'categorical'
+  //           ? categoricalRegression(v2, v1)
+  //           : correlation(v1, v2);
 
-        relations.push({
-          source: column1,
-          target: column2,
-          value: value,
-          magnitude: Math.abs(value),
-        });
-      }
+  //       relations.push({
+  //         source: column1,
+  //         target: column2,
+  //         value: value,
+  //         magnitude: Math.abs(value),
+  //       });
+  //     }
 
-      return relations;
-    }, []);
+  //     return relations;
+  //   }, []);
 
-    relations.sort((a, b) => d3.ascending(a.magnitude, b.magnitude));
-  }
+  //   relations.sort((a, b) => d3.ascending(a.magnitude, b.magnitude));
+  // }
 
   function sortByColumn(column) {
     const sort = column.sort === 'descending' ? 'ascending' : 'descending';
@@ -1256,15 +1256,36 @@ export const digestable = () => {
   function drawLinks() {
     if (!table.node()) return;
 
-    linkSvg.style('display', showLinks ? null : 'none');
-    if (!showLinks) return;
-
-    if (relations.length === 0) {
-      computeRelations();
-    }
-
     // linkSvg.style('display', showLinks ? null : 'none');
     // if (!showLinks) return;
+
+    // computeRelations();
+    if (relations.length === 0) {
+      if (window.Worker) {
+        // instantiate worker
+        const computeRelationWorker = new Worker(
+          './compute-relation-web-worker.js'
+        );
+        // post data to worker
+        computeRelationWorker.postMessage({
+          relations,
+          columns,
+          allData,
+        });
+        // if received data from worker
+        computeRelationWorker.onmessage = function(e) {
+          if (e && e.data) {
+            relations = e.data;
+            console.log('Message received from worker');
+          }
+        };
+      } else {
+        console.log("Your browser doesn't support web worker");
+      }
+    }
+
+    linkSvg.style('display', showLinks ? null : 'none');
+    if (!showLinks) return;
 
     const width = table.node().offsetWidth;
     const height = 200;
