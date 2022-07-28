@@ -5,8 +5,10 @@ import {
   clusterGap,
   groupCategories,
 } from './clustering';
-import { correlation, cramersV, categoricalRegression } from './relations';
 import './digestable.css';
+// import worker for relation calculation
+import WorkerBuilder from './worker/worker-builder';
+import Worker from './worker/compute-relation-web-worker';
 
 export const digestable = () => {
   // The table
@@ -1263,9 +1265,8 @@ export const digestable = () => {
     if (relations.length === 0) {
       if (window.Worker) {
         // instantiate worker
-        const computeRelationWorker = new Worker(
-          './compute-relation-web-worker.js'
-        );
+        const computeRelationWorker = new WorkerBuilder(Worker);
+
         // post data to worker
         computeRelationWorker.postMessage({
           relations,
