@@ -7,8 +7,8 @@ import {
 } from './clustering';
 import './digestable.css';
 // import worker for relation calculation
-import WorkerBuilder from './worker/worker-builder';
-import Worker from './worker/compute-relation-web-worker';
+/* eslint-disable import/no-webpack-loader-syntax */
+import Worker from 'worker-loader!./compute-relation-web-worker.js';
 
 export const digestable = () => {
   // The table
@@ -1265,8 +1265,9 @@ export const digestable = () => {
     if (relations.length === 0) {
       if (window.Worker) {
         // instantiate worker
-        const computeRelationWorker = new WorkerBuilder(Worker);
-
+        console.log(Worker);
+        const computeRelationWorker = new Worker();
+        console.log(computeRelationWorker);
         // post data to worker
         computeRelationWorker.postMessage({
           relations,
@@ -1277,12 +1278,16 @@ export const digestable = () => {
         computeRelationWorker.onmessage = function(e) {
           if (e && e.data) {
             relations = e.data;
+            console.log(relations);
             console.log('Message received from worker');
           }
         };
       } else {
         console.log("Your browser doesn't support web worker");
       }
+    } else {
+      console.log('does have relation!');
+      console.log(relations);
     }
 
     linkSvg.style('display', showLinks ? null : 'none');

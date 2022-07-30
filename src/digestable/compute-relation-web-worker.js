@@ -1,24 +1,21 @@
-import { correlation, cramersV, categoricalRegression } from '../relations';
 import * as d3 from 'd3';
-// eslint-disable-next-line import/no-anonymous-default-export
-export default () => {
-  // on message
-  // eslint-disable-next-line no-restricted-globals
-  onmessage = (e) => {
-    if (e && e.data) {
-      console.log('Worker: Message received from main script');
+import { categoricalRegression, correlation, cramersV } from './relations';
 
-      const { relations, columns, allData } = e.data;
-      console.log(allData);
-      relations = computeRelations(relations, columns, allData);
-      // post message back
-      console.log('Worker: Posting message back to main script');
-      postMessage(relations);
-    }
-  };
+// on message
+// eslint-disable-next-line no-restricted-globals
+self.onmessage = (e) => {
+  let { relations, columns, allData } = e.data;
+  if (e && e.data) {
+    console.log('Worker: Message received from main script');
+    console.log(allData);
+    computeRelations();
+    // post message back
+    console.log('Worker: Posting message back to main script');
+    postMessage(relations);
+  }
 
   // Compute relations
-  function computeRelations(relations, columns, allData) {
+  function computeRelations() {
     relations = columns.reduce((relations, column1, i, a) => {
       const v1 = allData.map((d) => d.values[column1.name]);
 
@@ -44,9 +41,10 @@ export default () => {
           magnitude: Math.abs(value),
         });
       }
+
       return relations;
     }, []);
+
     relations.sort((a, b) => d3.ascending(a.magnitude, b.magnitude));
-    return relations;
   }
 };
