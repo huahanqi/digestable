@@ -28,6 +28,8 @@ export const digestable = () => {
     transformBase = 1,
     visualizationMode = 'text',
     showLinks = false,
+    // web-worker para
+    //isCalculating = false,
     categoryScaling = 'row',
     paddingX = 5,
     paddingY = 0,
@@ -1262,12 +1264,13 @@ export const digestable = () => {
     // if (!showLinks) return;
 
     // computeRelations();
+
     if (relations.length === 0) {
       if (window.Worker) {
         // instantiate worker
-        console.log(Worker);
+        //isCalculating = true;
         const computeRelationWorker = new Worker();
-        console.log(computeRelationWorker);
+
         // post data to worker
         computeRelationWorker.postMessage({
           relations,
@@ -1277,17 +1280,16 @@ export const digestable = () => {
         // if received data from worker
         computeRelationWorker.onmessage = function(e) {
           if (e && e.data) {
-            relations = e.data;
-            console.log(relations);
+            const { relations: re, columns: cols } = e.data;
+            relations = re;
+            columns = cols;
             console.log('Message received from worker');
+            //isCalculating = false;
           }
         };
       } else {
         console.log("Your browser doesn't support web worker");
       }
-    } else {
-      console.log('does have relation!');
-      console.log(relations);
     }
 
     linkSvg.style('display', showLinks ? null : 'none');

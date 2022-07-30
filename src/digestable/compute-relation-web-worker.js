@@ -7,11 +7,10 @@ self.onmessage = (e) => {
   let { relations, columns, allData } = e.data;
   if (e && e.data) {
     console.log('Worker: Message received from main script');
-    console.log(allData);
     computeRelations();
     // post message back
     console.log('Worker: Posting message back to main script');
-    postMessage(relations);
+    postMessage({ relations, columns });
   }
 
   // Compute relations
