@@ -29,7 +29,7 @@ export const digestable = () => {
     visualizationMode = 'text',
     showLinks = false,
     // web-worker para
-    //isCalculating = false,
+    isCalculating = false,
     categoryScaling = 'row',
     paddingX = 5,
     paddingY = 0,
@@ -1264,11 +1264,12 @@ export const digestable = () => {
     // if (!showLinks) return;
 
     // computeRelations();
-
-    if (relations.length === 0) {
+    console.log('iscalculating: ', isCalculating);
+    if (relations.length === 0 && !isCalculating) {
+      console.log('inside the block');
       if (window.Worker) {
         // instantiate worker
-        //isCalculating = true;
+        isCalculating = true;
         const computeRelationWorker = new Worker();
 
         // post data to worker
@@ -1284,7 +1285,7 @@ export const digestable = () => {
             relations = re;
             columns = cols;
             console.log('Message received from worker');
-            //isCalculating = false;
+            isCalculating = false;
           }
         };
       } else {
