@@ -11,15 +11,15 @@ export const TableWrapper = ({ data }) => {
     { apply, method, amount, rows, transformBase },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
-  const [{ mode, showLinks, categoryScaling }] = useContext(
-    VisualizationContext
-  );
+  const [
+    { mode, showLinks, categoryScaling },
+    visualizationDispatch,
+  ] = useContext(VisualizationContext);
   const divRef = useRef();
   const digestableRef = useRef();
   const OuterDivRef = useRef();
 
   // parameters for load more
-
   const [isFullData, setIsFullData] = useState(false);
   const [rowNum, setRowNum] = useState('');
   // Scroll callback
@@ -50,6 +50,13 @@ export const TableWrapper = ({ data }) => {
             columnType: column.type,
             unique: column.uniqueValues.length,
           });
+        })
+        .onCalcRel('CalculateRelations', (isCalculating) => {
+          //console.log(isCalculating);
+          visualizationDispatch({
+            type: 'setCalculatingRelations',
+            calculatingRelations: isCalculating,
+          });
         });
     }
   }, []);
@@ -59,6 +66,10 @@ export const TableWrapper = ({ data }) => {
     d3.select(divRef.current)
       .datum(data)
       .call(digestableRef.current);
+    visualizationDispatch({
+      type: 'setCalculatingRelations',
+      calculatingRelations: true,
+    });
   }, [data]);
 
   // Simplify parameters
@@ -110,6 +121,16 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.categoryScaling(categoryScaling);
     }
   }, [categoryScaling]);
+
+  // if still calculate relations
+  // useEffect(() => {
+  //   if (digestableRef.current) {
+  //     visualizationDispatch({
+  //       type: 'setCalculatingRelations',
+  //       calculatingRelations: false,
+  //     });
+  //   }
+  // }, [calculatingRelations]);
 
   //load-more parameter
 

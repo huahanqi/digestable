@@ -6,10 +6,10 @@ import { categoricalRegression, correlation, cramersV } from './relations';
 self.onmessage = (e) => {
   let { relations, columns, allData } = e.data;
   if (e && e.data) {
-    console.log('Worker: Message received from main script');
+    //console.log('Worker: Message received from main script');
     computeRelations();
     // post message back
-    console.log('Worker: Posting message back to main script');
+    //console.log('Worker: Posting message back to main script');
     postMessage({ relations, columns });
   }
 

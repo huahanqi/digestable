@@ -3,8 +3,8 @@ import React, { createContext, useReducer } from 'react';
 const methods = [
   { name: 'quantiles', type: 'rows' },
   { name: 'kmeans', type: 'rows' },
-  { name: 'gap', type: 'rows', transform: true }
-//  { name: 'threshold', type: 'amount' }
+  { name: 'gap', type: 'rows', transform: true },
+  //  { name: 'threshold', type: 'amount' }
 ];
 
 const initialState = {
@@ -15,62 +15,62 @@ const initialState = {
   amount: 0.5,
   transformBase: 1,
   unique: 0,
-  rows: 10 
+  rows: 10,
 };
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case 'setApply': 
+    case 'setApply':
       return {
         ...state,
-        apply: action.apply
+        apply: action.apply,
       };
 
     case 'setMethod':
       return {
         ...state,
-        method: action.method
+        method: action.method,
       };
 
     case 'setAmount':
       return {
         ...state,
-        amount: action.amount
+        amount: action.amount,
       };
 
     case 'setTransformBase':
       return {
         ...state,
-        transformBase: action.transformBase
+        transformBase: action.transformBase,
       };
 
-    case 'setColumnInfo': 
+    case 'setColumnInfo':
       return {
         ...state,
         columnType: action.columnType,
         unique: action.unique,
-        rows: Math.min(state.rows, action.unique)
-      }
+        rows: Math.min(state.rows, action.unique),
+      };
 
     case 'setRows':
       return {
         ...state,
-        rows: action.rows
-      }
+        rows: action.rows,
+      };
 
-    default: 
+    default:
       throw new Error('Invalid simplify context action: ' + action.type);
   }
-}
+};
 
 export const SimplifyContext = createContext(initialState);
 
 export const SimplifyProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
- 
+
   return (
-    <SimplifyContext.Provider value={ [state, dispatch] }>
-      { children }
+    <SimplifyContext.Provider value={[state, dispatch]}>
+      {children}
     </SimplifyContext.Provider>
-  )
-} 
+  );
+};

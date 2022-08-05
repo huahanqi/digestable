@@ -38,6 +38,7 @@ export const digestable = () => {
     isMissing = (d) => missingValues.includes(d),
     // Event dispatcher
     dispatcher = d3.dispatch('clusterByColumn'),
+    dispatcher_calcRel = d3.dispatch('CalculateRelations'),
     // load more data parameters
     addMoreData = 20,
     isFullData = false;
@@ -94,7 +95,10 @@ export const digestable = () => {
         }, {})
       )
     )
-      .map(([key, value]) => ({ value: key, count: value }))
+      .map(([key, value]) => ({
+        value: key,
+        count: value,
+      }))
       .sort((a, b) => d3.descending(a.count, b.count));
 
   const significantDigits = (n) => {
@@ -126,7 +130,9 @@ export const digestable = () => {
   }
 
   function createColumns(inputData) {
-    columns = inputData.columns.map((d) => ({ name: d }));
+    columns = inputData.columns.map((d) => ({
+      name: d,
+    }));
 
     // Determine column types and set column info
     columns.forEach((column) => {
@@ -1085,7 +1091,12 @@ export const digestable = () => {
 
                       const counts = v.counts
                         ? v.counts
-                        : [{ value: v, count: 1 }];
+                        : [
+                            {
+                              value: v,
+                              count: 1,
+                            },
+                          ];
 
                       const colorScale = d3
                         .scaleOrdinal()
@@ -1264,9 +1275,8 @@ export const digestable = () => {
     // if (!showLinks) return;
 
     // computeRelations();
-    console.log('iscalculating: ', isCalculating);
+
     if (relations.length === 0 && !isCalculating) {
-      console.log('inside the block');
       if (window.Worker) {
         // instantiate worker
         isCalculating = true;
@@ -1284,8 +1294,9 @@ export const digestable = () => {
             const { relations: re, columns: cols } = e.data;
             relations = re;
             columns = cols;
-            console.log('Message received from worker');
+            //console.log('Message received from worker');
             isCalculating = false;
+            dispatcher_calcRel.call('CalculateRelations', this, isCalculating);
           }
         };
       } else {
@@ -1455,6 +1466,12 @@ export const digestable = () => {
   digestable.on = function() {
     const value = dispatcher.on.apply(dispatcher, arguments);
     return value === dispatcher ? digestable : value;
+  };
+
+  // For registering event callbacks
+  digestable.onCalcRel = function() {
+    const value = dispatcher_calcRel.on.apply(dispatcher_calcRel, arguments);
+    return value === dispatcher_calcRel ? digestable : value;
   };
 
   function loadMoreData(rowNum) {

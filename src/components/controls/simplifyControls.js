@@ -7,102 +7,101 @@ const { Group, Label, Check, Select, Range, Control } = Form;
 
 export const SimplifyControls = () => {
   const [
-    { apply, columnType, methods, method, amount, transformBase, unique, rows }, 
-    simplifyDispatch
+    { apply, columnType, methods, method, amount, transformBase, unique, rows },
+    simplifyDispatch,
   ] = useContext(SimplifyContext);
 
-  const onApplyChange = evt => {
+  const onApplyChange = (evt) => {
     simplifyDispatch({ type: 'setApply', apply: evt.target.checked });
   };
 
-  const onMethodChange = evt => {
-    simplifyDispatch({ type: 'setMethod', method: methods.find(({ name }) => name === evt.target.value) });
+  const onMethodChange = (evt) => {
+    simplifyDispatch({
+      type: 'setMethod',
+      method: methods.find(({ name }) => name === evt.target.value),
+    });
   };
 
-  const onAmountChange = evt => {
+  const onAmountChange = (evt) => {
     simplifyDispatch({ type: 'setAmount', amount: +evt.target.value / 100 });
   };
 
-  const onRowsChange = evt => {
+  const onRowsChange = (evt) => {
     simplifyDispatch({ type: 'setRows', rows: +evt.target.value });
   };
 
-  const onTransformBaseChange = evt => {
-    simplifyDispatch({ type: 'setTransformBase', transformBase: +evt.target.value / 100 });
+  const onTransformBaseChange = (evt) => {
+    simplifyDispatch({
+      type: 'setTransformBase',
+      transformBase: +evt.target.value / 100,
+    });
   };
 
   return (
-    <ControlPanel title='Simplification' subtitle={ `${ columnType } column` }>
+    <ControlPanel title='Simplification' subtitle={`${columnType} column`}>
       <Group>
-        <Check 
-          type='checkbox' 
+        <Check
+          type='checkbox'
           label='Apply'
-          id='apply-simplification-checkbox'              
+          id='apply-simplification-checkbox'
           size='sm'
-          checked={ apply }
-          disabled={ columnType === 'id' }
-          onChange={ onApplyChange }
+          checked={apply}
+          disabled={columnType === 'id'}
+          onChange={onApplyChange}
         />
       </Group>
-      { columnType === 'numeric' &&
+      {columnType === 'numeric' && (
         <>
           <Group>
             <Label>numeric column:</Label>
             <FloatingLabel label='Method'>
-              <Select 
-                value={ method.name }
-                onChange={ onMethodChange }
-              >
-                { methods.map(({ name }, i) => (
-                    <option 
-                      key={ i } 
-                      value={ name }
-                    >
-                      { name }
-                    </option>
-                  ))
-                }
+              <Select value={method.name} onChange={onMethodChange}>
+                {methods.map(({ name }, i) => (
+                  <option key={i} value={name}>
+                    {name}
+                  </option>
+                ))}
               </Select>
             </FloatingLabel>
           </Group>
-          { method.type === 'amount' ?
+          {method.type === 'amount' ? (
             <Group>
               <Label>Amount</Label>
-              <Range 
-                min={ 0 }
-                max={ 100 }
-                step={ 1 }
-                value={ amount * 100 }
-                onChange={ onAmountChange }
-              />        
+              <Range
+                min={0}
+                max={100}
+                step={1}
+                value={amount * 100}
+                onChange={onAmountChange}
+              />
             </Group>
-          :
+          ) : (
             <Group>
-              <Label >Number of rows</Label>
+              <Label>Number of rows</Label>
               <Control
                 type='number'
-                min={ 1 }
-                max={ unique }
-                step={ 1 }
-                value={ rows }
-                onChange={ onRowsChange }
-              />        
+                min={1}
+                max={unique}
+                step={1}
+                value={rows}
+                onChange={onRowsChange}
+              />
             </Group>
-          }
-          { method.transform && 
+          )}
+          {method.transform && (
             <Group>
               <Label>Depth weight</Label>
-              <Range 
-                min={ 100 }
-                max={ 400 }
-                step={ 1 }
-                value={ transformBase * 100 }
-                onChange={ onTransformBaseChange }
-              />        
+              <Range
+                min={100}
+                max={400}
+                step={1}
+                value={transformBase * 100}
+                onChange={onTransformBaseChange}
+              />
             </Group>
-          }
+          )}
         </>
-      }
+      )}
     </ControlPanel>
   );
 };
