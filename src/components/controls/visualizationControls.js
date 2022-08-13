@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Form, FloatingLabel, Spinner, Row, Col } from 'react-bootstrap';
 import { VisualizationContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
@@ -50,15 +50,42 @@ export const VisualizationControls = () => {
         </FloatingLabel>
       </Group>
       <Group>
-        <Check
-          type='checkbox'
-          label='Show links'
-          id='show-links-checkbox'
-          size='sm'
-          checked={showLinks}
-          onChange={onShowLinksChange}
-          disabled={calculatingRelations}
-        />
+        {calculatingRelations ? (
+          <Row>
+            <Col>
+              <Check
+                type='checkbox'
+                label='Show links'
+                id='show-links-checkbox'
+                size='sm'
+                checked={showLinks}
+                onChange={onShowLinksChange}
+                disabled={calculatingRelations}
+              />
+            </Col>
+            <Col>
+              <Spinner
+                animation='border'
+                style={{
+                  width: '1.5rem',
+                  height: '1.5rem',
+                  position: 'relative',
+                  right: '20%',
+                }}
+              />
+            </Col>
+          </Row>
+        ) : (
+          <Check
+            type='checkbox'
+            label='Show links'
+            id='show-links-checkbox'
+            size='sm'
+            checked={showLinks}
+            onChange={onShowLinksChange}
+            disabled={calculatingRelations}
+          />
+        )}
       </Group>
       <Group>
         <FloatingLabel label='Category scaling'>
