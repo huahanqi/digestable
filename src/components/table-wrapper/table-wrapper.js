@@ -21,7 +21,7 @@ export const TableWrapper = ({ data }) => {
 
   // parameters for load more
   const [isFullData, setIsFullData] = useState(false);
-  const [rowNum, setRowNum] = useState('');
+  const [addrowNum, setAddRowNum] = useState(0);
   // Scroll callback
   const onScroll = useScrollHook(
     () => {
@@ -142,9 +142,9 @@ export const TableWrapper = ({ data }) => {
   }, []);
 
   // click event
-  const loadMore = (rowNum) => {
+  const loadMore = (addrowNum) => {
     if (digestableRef.current) {
-      digestableRef.current.loadMore(rowNum);
+      digestableRef.current.loadMore(addrowNum);
       if (digestableRef.current.isFullData()) {
         setIsFullData(true);
       }
@@ -152,6 +152,14 @@ export const TableWrapper = ({ data }) => {
   };
 
   const max = digestableRef.current && digestableRef.current.fullDataLength();
+  const displayRowNum =
+    digestableRef.current && digestableRef.current.displayRowNum();
+
+  const refreshDisplayRowNum = () => {
+    if (digestableRef.current) {
+      return digestableRef.current.displayRowNum();
+    }
+  };
   return (
     <div
       ref={OuterDivRef}
@@ -168,9 +176,11 @@ export const TableWrapper = ({ data }) => {
         <Footer
           loadMore={loadMore}
           isFullData={isFullData}
-          rowNum={rowNum}
-          setRowNum={setRowNum}
+          addrowNum={addrowNum}
+          setAddRowNum={setAddRowNum}
           max={max}
+          displayRowNum={displayRowNum}
+          refreshDisplayRowNum={refreshDisplayRowNum}
         />
       )}
     </div>

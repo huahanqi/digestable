@@ -1,11 +1,26 @@
 import { Button, Form, Row, Col } from 'react-bootstrap';
-
-const Footer = ({ loadMore, isFullData, rowNum, setRowNum, max }) => {
+import { useState } from 'react';
+const Footer = ({
+  loadMore,
+  isFullData,
+  addrowNum,
+  setAddRowNum,
+  max,
+  displayRowNum,
+  refreshDisplayRowNum,
+}) => {
   // handle form submit
+  const [displayRowNumAct, setDisplayRowNumAct] = useState(displayRowNum || 20);
+
   const onFormSubmit = (e) => {
     e.preventDefault();
-    loadMore(rowNum);
-    setRowNum('');
+    loadMore(addrowNum);
+    if (refreshDisplayRowNum() > max) {
+      setDisplayRowNumAct(max);
+    } else {
+      setDisplayRowNumAct(refreshDisplayRowNum());
+    }
+    setAddRowNum(0);
   };
   return (
     <div
@@ -22,27 +37,34 @@ const Footer = ({ loadMore, isFullData, rowNum, setRowNum, max }) => {
       <Form onSubmit={onFormSubmit}>
         <Row>
           <Col xs='auto'>
-            <Form.Control
-              style={{ width: '12rem' }}
-              type='number'
-              placeholder='Number of Rows'
-              min='1'
-              max={max}
-              value={rowNum}
-              onChange={(e) => setRowNum(e.target.value)}
-              disabled={isFullData}
-            />
+            <Form.Text
+              style={{ position: 'relative', top: '.5rem', fontSize: '1rem' }}
+            >
+              Showing {displayRowNumAct} of {max} rows
+            </Form.Text>
           </Col>
           <Col xs='auto'>
             <Button
               disabled={isFullData}
-              style={{
-                marginLeft: '1rem',
-              }}
+              // style={{
+              //   marginLeft: '1rem',
+              // }}
               type='submit'
             >
-              {isFullData ? 'End of Data' : 'Load Data'}
+              {isFullData ? 'End of Data' : `Load ${addrowNum} more rows`}
             </Button>
+          </Col>
+          <Col xs='auto'>
+            <Form.Control
+              //style={{ width: '8rem' }}
+              type='number'
+              //placeholder='more rows'
+              min='1'
+              max={max}
+              value={addrowNum}
+              onChange={(e) => setAddRowNum(e.target.value)}
+              disabled={isFullData}
+            />
           </Col>
         </Row>
       </Form>

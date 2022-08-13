@@ -40,7 +40,7 @@ export const digestable = () => {
     dispatcher = d3.dispatch('clusterByColumn'),
     dispatcher_calcRel = d3.dispatch('CalculateRelations'),
     // load more data parameters
-    addMoreData = 20,
+    displayRowNum = 20,
     isFullData = false;
 
   function digestable(selection) {
@@ -408,8 +408,8 @@ export const digestable = () => {
         return row;
       });
     } else {
-      if (addMoreData < [...allData].length) {
-        data = [...allData].slice(0, addMoreData);
+      if (displayRowNum < [...allData].length) {
+        data = [...allData].slice(0, displayRowNum);
       } else {
         data = [...allData];
         isFullData = true;
@@ -1475,9 +1475,10 @@ export const digestable = () => {
   };
 
   function loadMoreData(rowNum) {
-    addMoreData = rowNum;
-    if (addMoreData < [...allData].length) {
-      data = [...allData].slice(0, addMoreData);
+    displayRowNum += parseInt(rowNum);
+    console.log(displayRowNum);
+    if (displayRowNum < [...allData].length) {
+      data = [...allData].slice(0, displayRowNum);
     } else {
       isFullData = true;
       data = [...allData];
@@ -1497,6 +1498,10 @@ export const digestable = () => {
 
   digestable.fullDataLength = function() {
     return [...allData].length;
+  };
+
+  digestable.displayRowNum = function() {
+    return displayRowNum;
   };
 
   return digestable;
