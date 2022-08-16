@@ -170,7 +170,7 @@ export const TableWrapper = ({ data }) => {
       }}
     >
       <div ref={divRef}></div>
-      {apply ? (
+      {apply || isFullData ? (
         <div></div>
       ) : (
         <Footer

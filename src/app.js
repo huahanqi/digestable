@@ -56,29 +56,9 @@ export const App = () => {
       loadData(URL.createObjectURL(file));
     }
   };
-
-  // const Footer = ({ context: { loadMore, loading } }) => {
-  //   return (
-  //     <Container
-  //       style={{
-  //         padding: '2rem',
-  //         display: 'flex',
-  //         justifyContent: 'center',
-  //       }}
-  //     >
-  //       <Button disabled={loading} onClick={loadMore}>
-  //         {loading ? 'Loading...' : 'Press to load more'}
-  //       </Button>
-  //     </Container>
-  //   );
-  // };
-  // const loadMore = useCallback(() => {
-  //   setLoading(true);
-  //   return setTimeout(() => {
-  //     setUsers((users) => [...users, ...generateUsers(100, users.length)]);
-  //     setLoading(() => false);
-  //   }, 500);
-  // }, [setUsers, setLoading]);
+  // Get the query string
+  const queryParams = new URLSearchParams(window.location.search);
+  const mode = queryParams.get('mode');
 
   return (
     <SimplifyProvider>
@@ -125,10 +105,14 @@ export const App = () => {
                 <TableWrapper data={data} />
               </Col>
               <Col className='bg-dark'>
-                <Stack gap={3}>
-                  <SimplifyControls />
-                  <VisualizationControls />
-                </Stack>
+                {mode === 'simple' ? (
+                  <Stack gap={3}></Stack>
+                ) : (
+                  <Stack gap={3}>
+                    <SimplifyControls />
+                    <VisualizationControls />
+                  </Stack>
+                )}
               </Col>
             </Row>
           </Container>
