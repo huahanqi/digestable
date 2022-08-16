@@ -10,7 +10,9 @@ const Footer = ({
   refreshDisplayRowNum,
 }) => {
   // handle form submit
-  const [displayRowNumAct, setDisplayRowNumAct] = useState(displayRowNum || 20);
+  const [displayRowNumAct, setDisplayRowNumAct] = useState(
+    displayRowNum || 100
+  );
 
   const onFormSubmit = (e) => {
     e.preventDefault();

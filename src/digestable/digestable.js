@@ -40,7 +40,7 @@ export const digestable = () => {
     dispatcher = d3.dispatch('clusterByColumn'),
     dispatcher_calcRel = d3.dispatch('CalculateRelations'),
     // load more data parameters
-    displayRowNum = 20,
+    displayRowNum = 100,
     isFullData = false;
 
   function digestable(selection) {
