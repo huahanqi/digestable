@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/digestable/static/css/main.7c494c5f.chunk.css",
-    "main.js": "/digestable/static/js/main.022b0ecd.chunk.js",
-    "main.js.map": "/digestable/static/js/main.022b0ecd.chunk.js.map",
+    "main.js": "/digestable/static/js/main.3141c5f5.chunk.js",
+    "main.js.map": "/digestable/static/js/main.3141c5f5.chunk.js.map",
     "runtime-main.js": "/digestable/static/js/runtime-main.61f306b1.js",
     "runtime-main.js.map": "/digestable/static/js/runtime-main.61f306b1.js.map",
-    "static/js/2.a1005841.chunk.js": "/digestable/static/js/2.a1005841.chunk.js",
-    "static/js/2.a1005841.chunk.js.map": "/digestable/static/js/2.a1005841.chunk.js.map",
+    "static/js/2.0c0c278f.chunk.js": "/digestable/static/js/2.0c0c278f.chunk.js",
+    "static/js/2.0c0c278f.chunk.js.map": "/digestable/static/js/2.0c0c278f.chunk.js.map",
     "index.html": "/digestable/index.html",
     "static/css/main.7c494c5f.chunk.css.map": "/digestable/static/css/main.7c494c5f.chunk.css.map",
-    "static/js/2.a1005841.chunk.js.LICENSE.txt": "/digestable/static/js/2.a1005841.chunk.js.LICENSE.txt",
+    "static/js/2.0c0c278f.chunk.js.LICENSE.txt": "/digestable/static/js/2.0c0c278f.chunk.js.LICENSE.txt",
     "static/js/compute-relation-web-worker.39ef6faf.worker.js": "/digestable/static/js/compute-relation-web-worker.39ef6faf.worker.js",
     "static/js/compute-relation-web-worker.39ef6faf.worker.js.map": "/digestable/static/js/compute-relation-web-worker.39ef6faf.worker.js.map"
   },
   "entrypoints": [
     "static/js/runtime-main.61f306b1.js",
-    "static/js/2.a1005841.chunk.js",
+    "static/js/2.0c0c278f.chunk.js",
     "static/css/main.7c494c5f.chunk.css",
-    "static/js/main.022b0ecd.chunk.js"
+    "static/js/main.3141c5f5.chunk.js"
   ]
 }
