@@ -21,7 +21,7 @@ export const TableWrapper = ({ data }) => {
 
   // parameters for load more
   const [isFullData, setIsFullData] = useState(false);
-  const [addrowNum, setAddRowNum] = useState(0);
+  const [addrowNum, setAddRowNum] = useState(100);
   // Scroll callback
   const onScroll = useScrollHook(
     () => {

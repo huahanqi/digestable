@@ -51,20 +51,17 @@ export const VisualizationControls = () => {
       </Group>
       <Group>
         {calculatingRelations ? (
-          <Row>
-            <Col>
-              <Check
-                type='checkbox'
-                label='Show links'
-                id='show-links-checkbox'
-                size='sm'
-                checked={showLinks}
-                onChange={onShowLinksChange}
-                disabled={calculatingRelations}
-              />
-            </Col>
-            <Col>
-              <Spinner
+          <>
+            <Check
+              type='checkbox'
+              label='Show links'
+              id='show-links-checkbox'
+              size='sm'
+              checked={showLinks}
+              onChange={onShowLinksChange}
+              disabled={calculatingRelations}
+            />
+            {/* <Spinner
                 animation='border'
                 style={{
                   width: '1.5rem',
@@ -72,9 +69,11 @@ export const VisualizationControls = () => {
                   position: 'relative',
                   right: '20%',
                 }}
-              />
-            </Col>
-          </Row>
+              /> */}
+            <p className='text-muted small' style={{ marginBottom: '0rem' }}>
+              Calculating...
+            </p>
+          </>
         ) : (
           <Check
             type='checkbox'

@@ -22,7 +22,7 @@ const Footer = ({
     } else {
       setDisplayRowNumAct(refreshDisplayRowNum());
     }
-    setAddRowNum(0);
+    setAddRowNum(100);
   };
   return (
     <div
