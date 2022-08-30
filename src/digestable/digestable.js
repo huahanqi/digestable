@@ -10,6 +10,10 @@ import './digestable.css';
 /* eslint-disable import/no-webpack-loader-syntax */
 import Worker from 'worker-loader!./compute-relation-web-worker.js';
 
+// import tippy for nicer tooltip
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
+
 export const digestable = () => {
   // The table
   let table = d3.select(),
@@ -748,8 +752,13 @@ export const digestable = () => {
                     .attr('y', (d) => yScale(d.length))
                     .attr('width', (d) => xScale(d.x1) - xScale(d.x0) - 1)
                     .attr('height', (d) => yScale(0) - yScale(d.length))
-                    .select('title')
-                    .text((d) => `${d.x0}-${d.x1}: ${d.length}`);
+                    //.select('title')
+                    //.text((d) => `${d.x0}-${d.x1}: ${d.length}`);
+                    .attr(
+                      'data-tippy-content',
+                      (d) => `${d.x0}-${d.x1}: ${d.length}`
+                    )
+                    .call((s) => tippy(s.nodes()));
 
                   break;
                 }
@@ -790,8 +799,10 @@ export const digestable = () => {
                     .attr('width', xScale.bandwidth())
                     .attr('height', (d) => yScale(0) - yScale(d.count))
                     .attr('fill', (d) => colorScale(d.value))
-                    .select('title')
-                    .text((d) => `${d.value}: ${d.count}`);
+                    //.select('title')
+                    //.text((d) => `${d.value}: ${d.count}`);
+                    .attr('data-tippy-content', (d) => `${d.value}: ${d.count}`)
+                    .call((s) => tippy(s.nodes()));
 
                   break;
                 }
