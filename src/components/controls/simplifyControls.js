@@ -118,15 +118,13 @@ export const SimplifyControls = () => {
             </Group>
           )}
           <Group>
-            <Label>Select</Label>
-            <br />
             <Button
-              variant='primary'
+              variant='outline-secondary'
               size='sm'
               value={!unselect}
               onClick={onUnselectChange}
             >
-              UnSelect all rows
+              Unselect all rows
             </Button>
           </Group>
         </>
