@@ -16,6 +16,7 @@ const initialState = {
   transformBase: 1,
   unique: 0,
   rows: 10,
+  unselect: false,
 };
 
 const reducer = (state, action) => {
@@ -56,6 +57,12 @@ const reducer = (state, action) => {
       return {
         ...state,
         rows: action.rows,
+      };
+
+    case 'setUnselect':
+      return {
+        ...state,
+        unselect: action.unselect,
       };
 
     default:

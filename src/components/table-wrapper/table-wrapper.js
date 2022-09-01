@@ -8,7 +8,7 @@ import Footer from './Footer';
 
 export const TableWrapper = ({ data }) => {
   const [
-    { apply, method, amount, rows, transformBase },
+    { apply, method, amount, rows, transformBase, unselect },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
   const [
@@ -102,6 +102,13 @@ export const TableWrapper = ({ data }) => {
       digestableRef.current.transformBase(transformBase);
     }
   }, [transformBase]);
+
+  // unselect parameters
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.unselect();
+    }
+  }, [unselect]);
 
   // Visualization parameters
   useEffect(() => {

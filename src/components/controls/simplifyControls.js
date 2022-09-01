@@ -1,5 +1,5 @@
 import { useContext } from 'react';
-import { Form, FloatingLabel } from 'react-bootstrap';
+import { Form, FloatingLabel, Button } from 'react-bootstrap';
 import { SimplifyContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
@@ -7,7 +7,17 @@ const { Group, Label, Check, Select, Range, Control } = Form;
 
 export const SimplifyControls = () => {
   const [
-    { apply, columnType, methods, method, amount, transformBase, unique, rows },
+    {
+      apply,
+      columnType,
+      methods,
+      method,
+      amount,
+      transformBase,
+      unique,
+      rows,
+      unselect,
+    },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
 
@@ -34,6 +44,13 @@ export const SimplifyControls = () => {
     simplifyDispatch({
       type: 'setTransformBase',
       transformBase: +evt.target.value / 100,
+    });
+  };
+
+  const onUnselectChange = (evt) => {
+    simplifyDispatch({
+      type: 'setUnselect',
+      unselect: evt.target.value === 'true',
     });
   };
 
@@ -100,6 +117,18 @@ export const SimplifyControls = () => {
               />
             </Group>
           )}
+          <Group>
+            <Label>Select</Label>
+            <br />
+            <Button
+              variant='primary'
+              size='sm'
+              value={!unselect}
+              onClick={onUnselectChange}
+            >
+              UnSelect all rows
+            </Button>
+          </Group>
         </>
       )}
     </ControlPanel>

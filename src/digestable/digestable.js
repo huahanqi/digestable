@@ -1254,7 +1254,6 @@ export const digestable = () => {
             row.indeces.forEach((i) => {
               allData[i].expanded = !allData[i].expanded;
             });
-
             drawTable();
           } else {
             row.pinned = !row.pinned;
@@ -1449,6 +1448,15 @@ export const digestable = () => {
       sortTable();
       drawTable();
     }
+    return digestable;
+  };
+
+  // unselect function
+  digestable.unselect = function() {
+    allData.forEach((row) => {
+      row.pinned = false;
+    });
+    drawTable();
     return digestable;
   };
 
