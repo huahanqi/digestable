@@ -1142,8 +1142,13 @@ export const digestable = () => {
                         .attr('width', xScale.bandwidth())
                         .attr('height', (d) => yScale(0) - yScale(d.count))
                         .attr('fill', (d) => colorScale(d.value))
-                        .select('title')
-                        .text((d) => `${d.value}: ${d.count}`);
+                        // .select('title')
+                        // .text((d) => `${d.value}: ${d.count}`);
+                        .attr(
+                          'data-tippy-content',
+                          (d) => `${d.value}: ${d.count}`
+                        )
+                        .call((s) => tippy(s.nodes()));
                     });
 
                   break;
