@@ -19,6 +19,7 @@ const { Group, Control, Select } = Form;
 const datasets = [
   { name: 'MT Cars', url: '/digestable/data/mtcars.csv' },
   { name: 'NFL Combine 2017', url: '/digestable/data/NFL Combine 2017.csv' },
+  { name: 'Starbucks', url: '/digestable/data/starbucks.csv' },
 ];
 
 export const App = () => {
