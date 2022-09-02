@@ -117,18 +117,18 @@ export const SimplifyControls = () => {
               />
             </Group>
           )}
-          <Group>
-            <Button
-              variant='outline-secondary'
-              size='sm'
-              value={!unselect}
-              onClick={onUnselectChange}
-            >
-              Unselect all rows
-            </Button>
-          </Group>
         </>
       )}
+      <Group>
+        <Button
+          variant='outline-secondary'
+          size='sm'
+          value={!unselect}
+          onClick={onUnselectChange}
+        >
+          Unselect all rows
+        </Button>
+      </Group>
     </ControlPanel>
   );
 };
