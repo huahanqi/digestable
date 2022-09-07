@@ -964,7 +964,7 @@ export const digestable = () => {
             .style('padding-right', px)
             .style('padding-top', py)
             .style('padding-bottom', py)
-            .each(function(column) {
+            .each(function(column, idx) {
               // Text
               const v = d.values[column.name];
 
@@ -973,9 +973,18 @@ export const digestable = () => {
                 .classed('expanded', d.expanded)
                 .classed('pinned', d.pinned);
 
-              td.select('.valueDiv .textDiv').html(
-                text(column.type, v, d.isCluster, column.maxDigits)
-              );
+              // clearer grouping indication for pinned rows
+              const isPinned = d3.select(this).classed('pinned');
+              const isExpanded = d3.select(this).classed('expanded');
+              if (applySimplification && !isExpanded && isPinned && idx === 0) {
+                td.select('.valueDiv .textDiv').html(
+                  text(column.type, '<—— ' + v, d.isCluster, column.maxDigits)
+                );
+              } else {
+                td.select('.valueDiv .textDiv').html(
+                  text(column.type, v, d.isCluster, column.maxDigits)
+                );
+              }
 
               td.select('.cellDiv')
                 .selectAll('.clusterDiv')
