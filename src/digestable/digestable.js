@@ -978,7 +978,7 @@ export const digestable = () => {
               const isExpanded = d3.select(this).classed('expanded');
               if (applySimplification && !isExpanded && isPinned && idx === 0) {
                 td.select('.valueDiv .textDiv').html(
-                  text(column.type, '<—— ' + v, d.isCluster, column.maxDigits)
+                  text(column.type, '&emsp;' + v, d.isCluster, column.maxDigits)
                 );
               } else {
                 td.select('.valueDiv .textDiv').html(
