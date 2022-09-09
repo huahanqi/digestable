@@ -20,6 +20,8 @@ const datasets = [
   { name: 'MT Cars', url: '/digestable/data/mtcars.csv' },
   { name: 'NFL Combine 2017', url: '/digestable/data/NFL Combine 2017.csv' },
   { name: 'Starbucks', url: '/digestable/data/starbucks.csv' },
+  { name: 'Electric Cars', url: '/digestable/data/ElectricCars.csv' },
+  { name: 'Stars', url: '/digestable/data/Stars.csv' },
 ];
 
 export const App = () => {
