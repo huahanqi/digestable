@@ -137,62 +137,66 @@ export const digestable = () => {
     columns = inputData.columns.map((d) => ({
       name: d,
     }));
-
+    const group = { name: 'group', type: 'group' };
+    columns.unshift(group);
+    console.log(columns);
     // Determine column types and set column info
-    columns.forEach((column) => {
-      const { name } = column;
-      const values = inputData.map((d) => d[name]);
-      const uniqueValues = Array.from(
-        values.reduce((values, d) => values.add(d), new Set())
-      );
-      const validValues = uniqueValues.filter((value) => !isMissing(value));
-      const numeric = validValues.reduce(
-        (numeric, value) => numeric && !isNaN(value),
-        true
-      );
-      const numbers = numeric ? validValues.map((d) => +d) : null;
-
-      column.uniqueValues = uniqueValues;
-
-      if (numeric) {
-        if (numbers.length === inputData.length) {
-          // Heuristic to check for integer ID type
-          numbers.sort((a, b) => d3.ascending(a, b));
-
-          const isId = numbers.reduce(
-            (isId, d, i, a) => isId && (i === 0 || d === a[i - 1] + 1),
-            true
-          );
-
-          column.type = isId ? 'id' : 'numeric';
-        } else if (
-          numbers.length === 2 &&
-          numbers.includes(0) &&
-          numbers.includes(1)
-        ) {
-          // Treat binary as categorical
-          column.type = 'categorical';
-        } else {
-          column.type = 'numeric';
-        }
-      } else if (uniqueValues.length === inputData.length) {
-        column.type = 'id';
-      } else {
-        column.type = 'categorical';
-      }
-
-      if (column.type === 'numeric') {
-        column.values = values.filter((value) => !isMissing(value));
-        column.extent = d3.extent(numbers);
-        column.maxDigits = d3.max(numbers, significantDigits);
-      } else if (column.type === 'categorical') {
-        column.type = 'categorical';
-        column.counts = getCounts(uniqueValues, values).sort(
-          (a, b) => b.count - a.count
+    columns
+      .filter((column) => column.type !== 'group')
+      .forEach((column) => {
+        const { name } = column;
+        const values = inputData.map((d) => d[name]);
+        const uniqueValues = Array.from(
+          values.reduce((values, d) => values.add(d), new Set())
         );
-        column.uniqueValues = column.counts.map(({ value }) => value);
-      }
-    });
+        const validValues = uniqueValues.filter((value) => !isMissing(value));
+        const numeric = validValues.reduce(
+          (numeric, value) => numeric && !isNaN(value),
+          true
+        );
+        const numbers = numeric ? validValues.map((d) => +d) : null;
+
+        column.uniqueValues = uniqueValues;
+
+        if (numeric) {
+          if (numbers.length === inputData.length) {
+            // Heuristic to check for integer ID type
+            numbers.sort((a, b) => d3.ascending(a, b));
+
+            const isId = numbers.reduce(
+              (isId, d, i, a) => isId && (i === 0 || d === a[i - 1] + 1),
+              true
+            );
+
+            column.type = isId ? 'id' : 'numeric';
+          } else if (
+            numbers.length === 2 &&
+            numbers.includes(0) &&
+            numbers.includes(1)
+          ) {
+            // Treat binary as categorical
+            column.type = 'categorical';
+          } else {
+            column.type = 'numeric';
+          }
+        } else if (uniqueValues.length === inputData.length) {
+          column.type = 'id';
+        } else {
+          column.type = 'categorical';
+        }
+
+        if (column.type === 'numeric') {
+          column.values = values.filter((value) => !isMissing(value));
+          column.extent = d3.extent(numbers);
+          column.maxDigits = d3.max(numbers, significantDigits);
+        } else if (column.type === 'categorical') {
+          column.type = 'categorical';
+          column.counts = getCounts(uniqueValues, values).sort(
+            (a, b) => b.count - a.count
+          );
+          column.uniqueValues = column.counts.map(({ value }) => value);
+        }
+      });
 
     clearSorting();
     clearClustering();
