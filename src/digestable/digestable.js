@@ -976,7 +976,11 @@ export const digestable = () => {
               // clearer grouping indication for pinned rows
               const isPinned = d3.select(this).classed('pinned');
               const isExpanded = d3.select(this).classed('expanded');
-              if (applySimplification && !isExpanded && isPinned && idx === 0) {
+              if (
+                applySimplification &&
+                idx === 0 &&
+                (isExpanded || isPinned)
+              ) {
                 td.select('.valueDiv .textDiv').html(
                   text(column.type, '&emsp;' + v, d.isCluster, column.maxDigits)
                 );
