@@ -819,6 +819,14 @@ export const digestable = () => {
 
                   break;
 
+                case 'group': {
+                  d3.select(this)
+                    .select('.visDiv svg')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                  break;
+                }
                 default:
                   console.log(`Unknown column type ${column.type}`);
               }
@@ -970,8 +978,12 @@ export const digestable = () => {
             .style('padding-bottom', py)
             .each(function(column, idx) {
               // Text
-              const v = d.values[column.name];
 
+              var v = d.values[column.name];
+              if (column.type === 'group') {
+                v = '\u25BA';
+              }
+              console.log(v);
               const td = d3
                 .select(this)
                 .classed('expanded', d.expanded)
@@ -982,7 +994,7 @@ export const digestable = () => {
               const isExpanded = d3.select(this).classed('expanded');
               if (
                 applySimplification &&
-                idx === 0 &&
+                idx === 1 &&
                 (isExpanded || isPinned)
               ) {
                 td.select('.valueDiv .textDiv').html(
@@ -1171,6 +1183,9 @@ export const digestable = () => {
                   break;
 
                 case 'id':
+                  break;
+
+                case 'group':
                   break;
 
                 default:
