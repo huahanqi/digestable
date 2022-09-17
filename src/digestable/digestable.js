@@ -139,7 +139,7 @@ export const digestable = () => {
     }));
     const group = { name: 'group', type: 'group' };
     columns.unshift(group);
-    console.log(columns);
+    //console.log(columns);
     // Determine column types and set column info
     columns
       .filter((column) => column.type !== 'group')
@@ -408,6 +408,8 @@ export const digestable = () => {
             } else {
               row.values[name] = null;
             }
+          } else if (type === 'group') {
+            //console.log('group');
           } else {
             console.warn('Unknown column type: ' + type);
           }
@@ -900,6 +902,10 @@ export const digestable = () => {
             return `<div class='clusterSize'>n = ${v}</div>`;
           }
 
+          case 'group': {
+            return `<div class='group' align="right">${v}</div>`;
+          }
+
           default:
             return null;
         }
@@ -979,11 +985,9 @@ export const digestable = () => {
             .each(function(column, idx) {
               // Text
 
-              var v = d.values[column.name];
-              if (column.type === 'group') {
-                v = '\u25BA';
-              }
-              console.log(v);
+              const v = d.values[column.name];
+
+              //console.log(v);
               const td = d3
                 .select(this)
                 .classed('expanded', d.expanded)
@@ -999,6 +1003,18 @@ export const digestable = () => {
               ) {
                 td.select('.valueDiv .textDiv').html(
                   text(column.type, '&emsp;' + v, d.isCluster, column.maxDigits)
+                );
+              } else if (
+                applySimplification &&
+                idx === 0 &&
+                (isExpanded || isPinned)
+              ) {
+                td.select('.valueDiv .textDiv').html(
+                  text(column.type, '\u25C7', d.isCluster, column.maxDigits)
+                );
+              } else if (idx === 0) {
+                td.select('.valueDiv .textDiv').html(
+                  text(column.type, '\u25BA', d.isCluster, column.maxDigits)
                 );
               } else {
                 td.select('.valueDiv .textDiv').html(
@@ -1282,11 +1298,28 @@ export const digestable = () => {
             .classed('mouseOver', false);
         })
         .on('click', function(evt, row) {
+          var isExpanded = false;
           if (row.isCluster) {
             row.indeces.forEach((i) => {
               allData[i].expanded = !allData[i].expanded;
+              isExpanded = allData[i].expanded;
             });
             drawTable();
+            if (isExpanded) {
+              table
+                .select('tbody')
+                .selectAll('tr')
+                .filter((d) => d === row)
+                .select('div.group')
+                .html(text('group', '\u25BC', row.isCluster, 0)); // random num for maxdigit
+            } else {
+              table
+                .select('tbody')
+                .selectAll('tr')
+                .filter((d) => d === row)
+                .select('div.group')
+                .html(text('group', '\u25BA', row.isCluster, 0)); // random num for maxdigit
+            }
           } else {
             row.pinned = !row.pinned;
 
@@ -1532,7 +1565,7 @@ export const digestable = () => {
 
   function loadMoreData(rowNum) {
     displayRowNum += parseInt(rowNum);
-    console.log(displayRowNum);
+    //console.log(displayRowNum);
     if (displayRowNum < [...allData].length) {
       data = [...allData].slice(0, displayRowNum);
     } else {
