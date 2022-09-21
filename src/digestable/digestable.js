@@ -638,55 +638,114 @@ export const digestable = () => {
         .selectAll('th')
         .data(columns, (d) => d.name)
         .join((enter) => {
+          enter.each(function(column) {
+            //console.log(column);
+          });
           const th = enter.append('th');
 
-          const div = th.append('div').attr('class', 'headerDiv');
-
-          const nameDiv = div.append('div').attr('class', 'nameDiv');
-
-          nameDiv.append('div').text((d) => d.name);
-
-          nameDiv
-            .append('button')
-            .attr('class', 'headerButton sortButton')
-            .on('click', (evt, d) => {
-              sortByColumn(d);
-              sortTable();
-              drawTable();
-            });
-
-          nameDiv
-            .append('button')
-            .attr('class', 'headerButton clusterButton')
-            .style('font-weight', 'bold')
-            .on('click', (evt, d) => {
-              clusterByColumn(d);
-              processData();
-              sortTable();
-              drawTable();
-
-              dispatcher.call('clusterByColumn', this, d);
-            });
-
-          div
-            .append('div')
-            .attr('class', 'info')
-            .html(info);
-
-          div.each(function(column) {
+          const div = th.each(function(column) {
             d3.select(this)
-              .selectAll('.visDiv')
-              .data(column.type === 'id' ? [] : [column])
+              .selectAll('.headerDiv')
+              .data(column.type === 'group' ? [] : [column])
               .join((enter) => {
-                const div = enter.append('div').attr('class', 'visDiv');
+                const div = enter.append('div').attr('class', 'headerDiv');
+                //console.log(div);
+                const nameDiv = div.append('div').attr('class', 'nameDiv');
+                nameDiv.append('div').text((d) => d.name);
+                nameDiv
+                  .append('button')
+                  .attr('class', 'headerButton sortButton')
+                  .on('click', (evt, d) => {
+                    sortByColumn(d);
+                    sortTable();
+                    drawTable();
+                  });
 
-                div.append('svg');
+                nameDiv
+                  .append('button')
+                  .attr('class', 'headerButton clusterButton')
+                  .style('font-weight', 'bold')
+                  .on('click', (evt, d) => {
+                    clusterByColumn(d);
+                    processData();
+                    sortTable();
+                    drawTable();
+
+                    dispatcher.call('clusterByColumn', this, d);
+                  });
+
+                div
+                  .append('div')
+                  .attr('class', 'info')
+                  .html(info);
+
+                div.each(function(column) {
+                  d3.select(this)
+                    .selectAll('.visDiv')
+                    .data(column.type === 'id' ? [] : [column])
+                    .join((enter) => {
+                      const div = enter.append('div').attr('class', 'visDiv');
+
+                      div.append('svg');
+
+                      return div;
+                    });
+                });
+
+                th.append('div').attr('class', 'highlight');
 
                 return div;
               });
           });
+          //console.log(div);
 
-          th.append('div').attr('class', 'highlight');
+          //const div = th.append('div').attr('class', 'headerDiv');
+
+          //const nameDiv = div.append('div').attr('class', 'nameDiv');
+
+          //nameDiv.append('div').text((d) => d.name);
+
+          // nameDiv
+          //   .append('button')
+          //   .attr('class', 'headerButton sortButton')
+          //   .on('click', (evt, d) => {
+          //     sortByColumn(d);
+          //     sortTable();
+          //     drawTable();
+          //   });
+
+          // nameDiv
+          //   .append('button')
+          //   .attr('class', 'headerButton clusterButton')
+          //   .style('font-weight', 'bold')
+          //   .on('click', (evt, d) => {
+          //     clusterByColumn(d);
+          //     processData();
+          //     sortTable();
+          //     drawTable();
+
+          //     dispatcher.call('clusterByColumn', this, d);
+          //   });
+
+          // div
+          //   .append('div')
+          //   .attr('class', 'info')
+          //   .html(info);
+
+          // div.each(function(column) {
+          //   d3.select(this)
+          //     .selectAll('.visDiv')
+          //     .data(column.type === 'id' ? [] : [column])
+          //     .join((enter) => {
+          //       const div = enter.append('div').attr('class', 'visDiv');
+
+          //       div.append('svg');
+
+          //       return div;
+          //     });
+          // });
+
+          // th.append('div').attr('class', 'highlight');
 
           return th;
         })
@@ -714,10 +773,14 @@ export const digestable = () => {
           d3.select(this)
             .selectAll('th')
             .each(function(column) {
-              const width = d3
-                .select(this)
-                .select('.nameDiv')
-                .node().clientWidth;
+              if (column.type == 'group') {
+                var width = 5;
+              } else {
+                width = d3
+                  .select(this)
+                  .select('.nameDiv')
+                  .node().clientWidth;
+              }
               const height = 10;
 
               // Visualization
@@ -1009,11 +1072,11 @@ export const digestable = () => {
                 idx === 0 &&
                 (isExpanded || isPinned)
               ) {
-                td.select('.valueDiv .textDiv').html(
+                td.select('.valueDiv').html(
                   text(column.type, '\u25C7', d.isCluster, column.maxDigits)
                 );
               } else if (idx === 0) {
-                td.select('.valueDiv .textDiv').html(
+                td.select('.valueDiv').html(
                   text(column.type, '\u25BA', d.isCluster, column.maxDigits)
                 );
               } else {
