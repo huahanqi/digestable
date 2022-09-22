@@ -638,11 +638,14 @@ export const digestable = () => {
         .selectAll('th')
         .data(columns, (d) => d.name)
         .join((enter) => {
-          enter.each(function(column) {
-            //console.log(column);
-          });
           const th = enter.append('th');
-
+          enter.each(function(column) {
+            if (column.type === 'group') {
+              d3.select(this)
+                .select('th')
+                .style('visibility', 'hidden');
+            }
+          });
           const div = th.each(function(column) {
             d3.select(this)
               .selectAll('.headerDiv')
@@ -773,7 +776,7 @@ export const digestable = () => {
           d3.select(this)
             .selectAll('th')
             .each(function(column) {
-              if (column.type == 'group') {
+              if (column.type === 'group') {
                 var width = 5;
               } else {
                 width = d3
@@ -1050,7 +1053,6 @@ export const digestable = () => {
 
               const v = d.values[column.name];
 
-              //console.log(v);
               const td = d3
                 .select(this)
                 .classed('expanded', d.expanded)
@@ -1073,12 +1075,26 @@ export const digestable = () => {
                 (isExpanded || isPinned)
               ) {
                 td.select('.valueDiv').html(
-                  text(column.type, '\u25C7', d.isCluster, column.maxDigits)
+                  text(column.type, '\u25C6', d.isCluster, column.maxDigits)
                 );
               } else if (idx === 0) {
-                td.select('.valueDiv').html(
-                  text(column.type, '\u25BA', d.isCluster, column.maxDigits)
-                );
+                const val = td
+                  .select('.valueDiv .group')
+                  .nodes()
+                  .map(function(d) {
+                    return d.innerHTML;
+                  });
+                console.log(val);
+                //console.log(val[0] === '\u25BC');
+                if (val[0] === '\u25BC') {
+                  td.select('.valueDiv').html(
+                    text(column.type, '\u25BC', d.isCluster, column.maxDigits)
+                  );
+                } else {
+                  td.select('.valueDiv').html(
+                    text(column.type, '\u25B6', d.isCluster, column.maxDigits)
+                  );
+                }
               } else {
                 td.select('.valueDiv .textDiv').html(
                   text(column.type, v, d.isCluster, column.maxDigits)
@@ -1368,20 +1384,21 @@ export const digestable = () => {
               isExpanded = allData[i].expanded;
             });
             drawTable();
+            // for the triangle indicators
             if (isExpanded) {
               table
                 .select('tbody')
                 .selectAll('tr')
                 .filter((d) => d === row)
-                .select('div.group')
-                .html(text('group', '\u25BC', row.isCluster, 0)); // random num for maxdigit
+                .select('.valueDiv .group')
+                .text('\u25BC'); // random num for maxdigit
             } else {
               table
                 .select('tbody')
                 .selectAll('tr')
                 .filter((d) => d === row)
-                .select('div.group')
-                .html(text('group', '\u25BA', row.isCluster, 0)); // random num for maxdigit
+                .select('.valueDiv .group')
+                .text('\u25B6'); // random num for maxdigit
             }
           } else {
             row.pinned = !row.pinned;
