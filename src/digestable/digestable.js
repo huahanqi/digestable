@@ -969,7 +969,7 @@ export const digestable = () => {
           }
 
           case 'group': {
-            return `<div class='group' align="right">${v}</div>`;
+            return `<div class='group' align="center">${v}</div>`;
           }
 
           default:
@@ -1076,11 +1076,21 @@ export const digestable = () => {
               ) {
                 if (isPinned) {
                   td.select('.valueDiv').html(
-                    text(column.type, '◆', d.isCluster, column.maxDigits)
+                    text(
+                      column.type,
+                      '\u25C6\uFE0E',
+                      d.isCluster,
+                      column.maxDigits
+                    ) // BLACK DIAMOND
                   );
                 } else {
                   td.select('.valueDiv').html(
-                    text(column.type, '◇', d.isCluster, column.maxDigits)
+                    text(
+                      column.type,
+                      '\u25C7\uFE0E',
+                      d.isCluster,
+                      column.maxDigits
+                    ) // WHITE DIAMOND
                   );
                 }
               } else if (idx === 0) {
@@ -1101,16 +1111,31 @@ export const digestable = () => {
                   });
                   if (isExpanded_target) {
                     td.select('.valueDiv').html(
-                      text(column.type, '▼', d.isCluster, column.maxDigits)
+                      text(
+                        column.type,
+                        '\u25BC\uFE0E',
+                        d.isCluster,
+                        column.maxDigits
+                      ) // BLACK DOWN-POINTING TRIANGLE
                     );
                   } else {
                     td.select('.valueDiv').html(
-                      text(column.type, '▶', d.isCluster, column.maxDigits)
+                      text(
+                        column.type,
+                        '\u25B6\uFE0E',
+                        d.isCluster,
+                        column.maxDigits
+                      ) //BLACK RIGHT-POINTING TRIANGLE
                     );
                   }
                 } else {
                   td.select('.valueDiv').html(
-                    text(column.type, '▶', d.isCluster, column.maxDigits)
+                    text(
+                      column.type,
+                      '\u25B6\uFE0E',
+                      d.isCluster,
+                      column.maxDigits
+                    ) //BLACK RIGHT-POINTING TRIANGLE
                   );
                 }
               } else {
