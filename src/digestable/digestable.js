@@ -639,13 +639,13 @@ export const digestable = () => {
         .data(columns, (d) => d.name)
         .join((enter) => {
           const th = enter.append('th');
-          enter.each(function(column) {
-            if (column.type === 'group') {
-              d3.select(this)
-                .select('th')
-                .style('visibility', 'hidden');
-            }
-          });
+          // enter.each(function(column) {
+          //   if (column.type === 'group') {
+          //     d3.select(this)
+          //       .select('th')
+          //       .style('visibility', 'hidden');
+          //   }
+          // });
           const div = th.each(function(column) {
             d3.select(this)
               .selectAll('.headerDiv')
@@ -1020,7 +1020,7 @@ export const digestable = () => {
         .join('tr')
         //.style('cursor', d => d.isCluster ? allData[d.indeces[0]].expanded ? 'zoom-out' : 'zoom-in': 'pointer')
         .style('cursor', 'pointer')
-        .each(function(d) {
+        .each(function(d, row) {
           d3.select(this)
             .selectAll('td')
             .data(columns, (d) => d.name)
@@ -1074,22 +1074,40 @@ export const digestable = () => {
                 idx === 0 &&
                 (isExpanded || isPinned)
               ) {
-                td.select('.valueDiv').html(
-                  text(column.type, '◆', d.isCluster, column.maxDigits)
-                );
-              } else if (idx === 0) {
-                const val = td
-                  .select('.valueDiv .group')
-                  .nodes()
-                  .map(function(d) {
-                    return d.innerHTML;
-                  });
-                console.log(val);
-                //console.log(val[0] === '\u25BC');
-                if (val[0] === '▼') {
+                if (isPinned) {
                   td.select('.valueDiv').html(
-                    text(column.type, '▼', d.isCluster, column.maxDigits)
+                    text(column.type, '◆', d.isCluster, column.maxDigits)
                   );
+                } else {
+                  td.select('.valueDiv').html(
+                    text(column.type, '◇', d.isCluster, column.maxDigits)
+                  );
+                }
+              } else if (idx === 0) {
+                //console.log(allData);
+                //console.log(d);
+                // const val = td
+                //   .select('.valueDiv .group')
+                //   .nodes()
+                //   .map(function(d) {
+                //     return d.innerHTML;
+                //   });
+                //console.log(val);
+                //console.log(val[0] === '\u25BC');
+                if (d.isCluster) {
+                  var isExpanded_target = false;
+                  d.indeces.forEach((i) => {
+                    isExpanded_target = allData[i].expanded;
+                  });
+                  if (isExpanded_target) {
+                    td.select('.valueDiv').html(
+                      text(column.type, '▼', d.isCluster, column.maxDigits)
+                    );
+                  } else {
+                    td.select('.valueDiv').html(
+                      text(column.type, '▶', d.isCluster, column.maxDigits)
+                    );
+                  }
                 } else {
                   td.select('.valueDiv').html(
                     text(column.type, '▶', d.isCluster, column.maxDigits)
@@ -1377,29 +1395,31 @@ export const digestable = () => {
             .classed('mouseOver', false);
         })
         .on('click', function(evt, row) {
-          var isExpanded = false;
+          //var isExpanded = false;
           if (row.isCluster) {
             row.indeces.forEach((i) => {
               allData[i].expanded = !allData[i].expanded;
-              isExpanded = allData[i].expanded;
             });
+            //console.log(row);
+            //row.isExpanded = allData[i].expanded;
+            //isExpanded = allData[row].expanded;
             drawTable();
             // for the triangle indicators
-            if (isExpanded) {
-              table
-                .select('tbody')
-                .selectAll('tr')
-                .filter((d) => d === row)
-                .select('.valueDiv .group')
-                .text('▼');
-            } else {
-              table
-                .select('tbody')
-                .selectAll('tr')
-                .filter((d) => d === row)
-                .select('.valueDiv .group')
-                .text('▶');
-            }
+            // if (isExpanded) {
+            //   table
+            //     .select('tbody')
+            //     .selectAll('tr')
+            //     .filter((d) => d === row)
+            //     .select('.valueDiv .group')
+            //     .text('▼');
+            // } else {
+            //   table
+            //     .select('tbody')
+            //     .selectAll('tr')
+            //     .filter((d) => d === row)
+            //     .select('.valueDiv .group')
+            //     .text('▶');
+            // }
           } else {
             row.pinned = !row.pinned;
 
@@ -1408,6 +1428,8 @@ export const digestable = () => {
               d3.select(this)
                 .selectAll('td')
                 .classed('pinned', true);
+
+              drawTable();
             } else {
               // Need to hide
               drawTable();
