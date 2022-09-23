@@ -1075,7 +1075,7 @@ export const digestable = () => {
                 (isExpanded || isPinned)
               ) {
                 td.select('.valueDiv').html(
-                  text(column.type, '\u25C6', d.isCluster, column.maxDigits)
+                  text(column.type, '◆', d.isCluster, column.maxDigits)
                 );
               } else if (idx === 0) {
                 const val = td
@@ -1086,13 +1086,13 @@ export const digestable = () => {
                   });
                 console.log(val);
                 //console.log(val[0] === '\u25BC');
-                if (val[0] === '\u25BC') {
+                if (val[0] === '▼') {
                   td.select('.valueDiv').html(
-                    text(column.type, '\u25BC', d.isCluster, column.maxDigits)
+                    text(column.type, '▼', d.isCluster, column.maxDigits)
                   );
                 } else {
                   td.select('.valueDiv').html(
-                    text(column.type, '\u25B6', d.isCluster, column.maxDigits)
+                    text(column.type, '▶', d.isCluster, column.maxDigits)
                   );
                 }
               } else {
@@ -1391,14 +1391,14 @@ export const digestable = () => {
                 .selectAll('tr')
                 .filter((d) => d === row)
                 .select('.valueDiv .group')
-                .text('\u25BC'); // random num for maxdigit
+                .text('▼');
             } else {
               table
                 .select('tbody')
                 .selectAll('tr')
                 .filter((d) => d === row)
                 .select('.valueDiv .group')
-                .text('\u25B6'); // random num for maxdigit
+                .text('▶');
             }
           } else {
             row.pinned = !row.pinned;
