@@ -1104,20 +1104,31 @@ export const digestable = () => {
                 //   });
                 //console.log(val);
                 //console.log(val[0] === '\u25BC');
-                if (d.isCluster) {
-                  var isExpanded_target = false;
-                  d.indeces.forEach((i) => {
-                    isExpanded_target = allData[i].expanded;
-                  });
-                  if (isExpanded_target) {
-                    td.select('.valueDiv').html(
-                      text(
-                        column.type,
-                        '\u25BC\uFE0E',
-                        d.isCluster,
-                        column.maxDigits
-                      ) // BLACK DOWN-POINTING TRIANGLE
-                    );
+                if (applySimplification) {
+                  if (d.isCluster) {
+                    var isExpanded_target = false;
+                    d.indeces.forEach((i) => {
+                      isExpanded_target = allData[i].expanded;
+                    });
+                    if (isExpanded_target) {
+                      td.select('.valueDiv').html(
+                        text(
+                          column.type,
+                          '\u25BC\uFE0E',
+                          d.isCluster,
+                          column.maxDigits
+                        ) // BLACK DOWN-POINTING TRIANGLE
+                      );
+                    } else {
+                      td.select('.valueDiv').html(
+                        text(
+                          column.type,
+                          '\u25B6\uFE0E',
+                          d.isCluster,
+                          column.maxDigits
+                        ) //BLACK RIGHT-POINTING TRIANGLE
+                      );
+                    }
                   } else {
                     td.select('.valueDiv').html(
                       text(
@@ -1130,12 +1141,7 @@ export const digestable = () => {
                   }
                 } else {
                   td.select('.valueDiv').html(
-                    text(
-                      column.type,
-                      '\u25B6\uFE0E',
-                      d.isCluster,
-                      column.maxDigits
-                    ) //BLACK RIGHT-POINTING TRIANGLE
+                    text(column.type, '', d.isCluster, column.maxDigits)
                   );
                 }
               } else {
@@ -1594,8 +1600,8 @@ export const digestable = () => {
     if (clusterColumn && clusterColumn.type !== 'id') {
       processData();
       sortTable();
-      drawTable();
     }
+    drawTable();
     return digestable;
   };
 
