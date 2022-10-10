@@ -646,100 +646,98 @@ export const digestable = () => {
           //       .style('visibility', 'hidden');
           //   }
           // });
-          if (applySimplification) {
-            const div = th.each(function(column) {
-              d3.select(this)
-                .selectAll('.headerDiv')
-                .data(column.type === 'group' ? [] : [column])
-                .join((enter) => {
-                  const div = enter.append('div').attr('class', 'headerDiv');
-                  //console.log(div);
-                  const nameDiv = div.append('div').attr('class', 'nameDiv');
-                  nameDiv.append('div').text((d) => d.name);
-                  nameDiv
-                    .append('button')
-                    .attr('class', 'headerButton sortButton')
-                    .on('click', (evt, d) => {
-                      sortByColumn(d);
-                      sortTable();
-                      drawTable();
-                    });
-
-                  nameDiv
-                    .append('button')
-                    .attr('class', 'headerButton clusterButton')
-                    .style('font-weight', 'bold')
-                    .on('click', (evt, d) => {
-                      clusterByColumn(d);
-                      processData();
-                      sortTable();
-                      drawTable();
-
-                      dispatcher.call('clusterByColumn', this, d);
-                    });
-
-                  div
-                    .append('div')
-                    .attr('class', 'info')
-                    .html(info);
-
-                  div.each(function(column) {
-                    d3.select(this)
-                      .selectAll('.visDiv')
-                      .data(column.type === 'id' ? [] : [column])
-                      .join((enter) => {
-                        const div = enter.append('div').attr('class', 'visDiv');
-
-                        div.append('svg');
-
-                        return div;
-                      });
+          const div = th.each(function(column) {
+            d3.select(this)
+              .selectAll('.headerDiv')
+              .data(column.type === 'group' ? [] : [column])
+              .join((enter) => {
+                const div = enter.append('div').attr('class', 'headerDiv');
+                //console.log(div);
+                const nameDiv = div.append('div').attr('class', 'nameDiv');
+                nameDiv.append('div').text((d) => d.name);
+                nameDiv
+                  .append('button')
+                  .attr('class', 'headerButton sortButton')
+                  .on('click', (evt, d) => {
+                    sortByColumn(d);
+                    sortTable();
+                    drawTable();
                   });
 
-                  th.append('div').attr('class', 'highlight');
+                nameDiv
+                  .append('button')
+                  .attr('class', 'headerButton clusterButton')
+                  .style('font-weight', 'bold')
+                  .on('click', (evt, d) => {
+                    clusterByColumn(d);
+                    processData();
+                    sortTable();
+                    drawTable();
 
-                  return div;
+                    dispatcher.call('clusterByColumn', this, d);
+                  });
+
+                div
+                  .append('div')
+                  .attr('class', 'info')
+                  .html(info);
+
+                div.each(function(column) {
+                  d3.select(this)
+                    .selectAll('.visDiv')
+                    .data(column.type === 'id' ? [] : [column])
+                    .join((enter) => {
+                      const div = enter.append('div').attr('class', 'visDiv');
+
+                      div.append('svg');
+
+                      return div;
+                    });
                 });
-            });
-          } else {
-            const div = th.append('div').attr('class', 'headerDiv');
-            const nameDiv = div.append('div').attr('class', 'nameDiv');
-            nameDiv.append('div').text((d) => d.name);
-            nameDiv
-              .append('button')
-              .attr('class', 'headerButton sortButton')
-              .on('click', (evt, d) => {
-                sortByColumn(d);
-                sortTable();
-                drawTable();
+
+                th.append('div').attr('class', 'highlight');
+
+                return div;
               });
-            nameDiv
-              .append('button')
-              .attr('class', 'headerButton clusterButton')
-              .style('font-weight', 'bold')
-              .on('click', (evt, d) => {
-                clusterByColumn(d);
-                processData();
-                sortTable();
-                drawTable();
-                dispatcher.call('clusterByColumn', this, d);
-              });
-            div
-              .append('div')
-              .attr('class', 'info')
-              .html(info);
-            div.each(function(column) {
-              d3.select(this)
-                .selectAll('.visDiv')
-                .data(column.type === 'id' ? [] : [column])
-                .join((enter) => {
-                  const div = enter.append('div').attr('class', 'visDiv');
-                  div.append('svg');
-                  return div;
-                });
-            });
-            th.append('div').attr('class', 'highlight');
-          }
+          });
+
+          //   const div = th.append('div').attr('class', 'headerDiv');
+          //   const nameDiv = div.append('div').attr('class', 'nameDiv');
+          //   nameDiv.append('div').text((d) => d.name);
+          //   nameDiv
+          //     .append('button')
+          //     .attr('class', 'headerButton sortButton')
+          //     .on('click', (evt, d) => {
+          //       sortByColumn(d);
+          //       sortTable();
+          //       drawTable();
+          //     });
+          //   nameDiv
+          //     .append('button')
+          //     .attr('class', 'headerButton clusterButton')
+          //     .style('font-weight', 'bold')
+          //     .on('click', (evt, d) => {
+          //       clusterByColumn(d);
+          //       processData();
+          //       sortTable();
+          //       drawTable();
+          //       dispatcher.call('clusterByColumn', this, d);
+          //     });
+          //   div
+          //     .append('div')
+          //     .attr('class', 'info')
+          //     .html(info);
+          //   div.each(function(column) {
+          //     d3.select(this)
+          //       .selectAll('.visDiv')
+          //       .data(column.type === 'id' ? [] : [column])
+          //       .join((enter) => {
+          //         const div = enter.append('div').attr('class', 'visDiv');
+          //         div.append('svg');
+          //         return div;
+          //       });
+          //   });
+          //   th.append('div').attr('class', 'highlight');
 
           return th;
         })
