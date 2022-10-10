@@ -961,6 +961,10 @@ export const digestable = () => {
             return `<div class='group' align="center">${v}</div>`;
           }
 
+          case 'Black Diamond': {
+            return `<div class='group' align="center", style="opacity:0.5;" >${v}</div>`;
+          }
+
           default:
             return null;
         }
@@ -1066,7 +1070,7 @@ export const digestable = () => {
                 if (isPinned) {
                   td.select('.valueDiv').html(
                     text(
-                      column.type,
+                      'Black Diamond',
                       '\u25C6\uFE0E',
                       d.isCluster,
                       column.maxDigits
