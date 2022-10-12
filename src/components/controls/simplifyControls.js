@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useContext } from 'react';
 import { Form, FloatingLabel, Button } from 'react-bootstrap';
 import { SimplifyContext } from '../../contexts';
@@ -21,10 +22,13 @@ export const SimplifyControls = ({ simplification }) => {
     simplifyDispatch,
   ] = useContext(SimplifyContext);
 
-  if (simplification == 'true') {
-    simplifyDispatch({ type: 'setApply', apply: true });
-    simplification = 'false';
-  }
+  useEffect(() => {
+    if (simplification === 'true') {
+      simplifyDispatch({ type: 'setApply', apply: true });
+      //simplification = 'false';
+    }
+  }, []);
+
   const onApplyChange = (evt) => {
     simplifyDispatch({ type: 'setApply', apply: evt.target.checked });
   };
