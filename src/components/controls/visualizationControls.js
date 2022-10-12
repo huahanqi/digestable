@@ -1,11 +1,11 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { Form, FloatingLabel, Spinner, Row, Col } from 'react-bootstrap';
 import { VisualizationContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
 const { Group, Select, Check } = Form;
 
-export const VisualizationControls = () => {
+export const VisualizationControls = ({ visual }) => {
   const [
     {
       modes,
@@ -17,6 +17,20 @@ export const VisualizationControls = () => {
     },
     visualizationDispatch,
   ] = useContext(VisualizationContext);
+
+  useEffect(() => {
+    if (visual === 'both') {
+      visualizationDispatch({ type: 'setMode', mode: 'both' });
+      //simplification = 'false';
+    } else if (visual === 'visualizations') {
+      visualizationDispatch({ type: 'setMode', mode: 'visualizations' });
+    } else if (visual === 'interactive') {
+      visualizationDispatch({
+        type: 'setMode',
+        mode: 'interactive',
+      });
+    }
+  }, []);
 
   const onModeChange = (evt) => {
     visualizationDispatch({ type: 'setMode', mode: evt.target.value });

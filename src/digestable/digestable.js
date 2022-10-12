@@ -91,14 +91,14 @@ export const digestable = () => {
         }
       });
     }
-    if (applySimplification) {
-      const clusterColumn = columns.find(({ cluster }) => cluster !== null);
-      if (clusterColumn && clusterColumn.type !== 'id') {
-        processData();
-        sortTable();
-      }
-      drawTable();
-    }
+    // if (applySimplification) {
+    //   const clusterColumn = columns.find(({ cluster }) => cluster !== null);
+    //   if (clusterColumn && clusterColumn.type !== 'id') {
+    //     processData();
+    //     sortTable();
+    //   }
+    //   drawTable();
+    // }
   }
 
   // Helper functions
@@ -1621,28 +1621,15 @@ export const digestable = () => {
     return digestable;
   };
 
-  digestable.applySimpleLink = function(simplification) {
-    if (!arguments.length) return simplification;
-    if (!simplification) return simplification;
-    if (simplification === 'true') {
-      applySimplification = true;
-    }
-    return digestable;
-  };
-
-  // digestable.applyClusterColumn = function(clusterCol) {
-  //   if (!arguments.length) return applyClusterColumn;
-  //   columns.forEach((d) => {
-  //     if (d.name === clusterCol) {
-  //       clusterByColumn(d);
-  //       processData();
-  //       sortTable();
-  //       drawTable();
-  //       dispatcher.call('clusterByColumn', this, d);
-  //     }
-  //   });
+  // digestable.applySimpleLink = function(simplification) {
+  //   if (!arguments.length) return simplification;
+  //   if (!simplification) return simplification;
+  //   if (simplification === 'true') {
+  //     applySimplification = true;
+  //   }
   //   return digestable;
   // };
+
   digestable.applySimplification = function(_) {
     if (!arguments.length) return applySimplification;
     applySimplification = _;

@@ -65,6 +65,7 @@ export const App = () => {
   const clusterCol = queryParams.get('clusterCol');
   const ascending = queryParams.get('ascending');
   const simplification = queryParams.get('simplification');
+  const visual = queryParams.get('visual');
 
   return (
     <SimplifyProvider>
@@ -112,7 +113,6 @@ export const App = () => {
                   data={data}
                   clusterCol={clusterCol}
                   ascending={ascending}
-                  simplification={simplification}
                 />
               </Col>
               <Col className='bg-dark'>
@@ -121,7 +121,7 @@ export const App = () => {
                 ) : (
                   <Stack gap={3}>
                     <SimplifyControls simplification={simplification} />
-                    <VisualizationControls />
+                    <VisualizationControls visual={visual} />
                   </Stack>
                 )}
               </Col>

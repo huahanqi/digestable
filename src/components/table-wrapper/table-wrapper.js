@@ -44,7 +44,7 @@ export const TableWrapper = ({
       digestableRef.current = digestable()
         .applySimplification(apply)
         .applyClusterColumnLink(clusterCol, ascending)
-        .applySimpleLink(simplification)
+        // .applySimpleLink(simplification)
         .simplificationMethod(method.name)
         .simplificationAmount(amount)
         .simplificationRows(rows)
