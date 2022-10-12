@@ -6,7 +6,12 @@ import { digestable } from '../../digestable';
 import Footer from './Footer';
 //import { index } from 'd3';
 
-export const TableWrapper = ({ data }) => {
+export const TableWrapper = ({
+  data,
+  clusterCol,
+  ascending,
+  simplification,
+}) => {
   const [
     { apply, method, amount, rows, transformBase, unselect },
     simplifyDispatch,
@@ -38,6 +43,8 @@ export const TableWrapper = ({ data }) => {
     if (!digestableRef.current) {
       digestableRef.current = digestable()
         .applySimplification(apply)
+        .applyClusterColumnLink(clusterCol, ascending)
+        .applySimpleLink(simplification)
         .simplificationMethod(method.name)
         .simplificationAmount(amount)
         .simplificationRows(rows)

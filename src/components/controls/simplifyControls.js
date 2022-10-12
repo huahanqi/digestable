@@ -5,7 +5,7 @@ import { ControlPanel } from './controlPanel';
 
 const { Group, Label, Check, Select, Range, Control } = Form;
 
-export const SimplifyControls = () => {
+export const SimplifyControls = ({ simplification }) => {
   const [
     {
       apply,
@@ -21,6 +21,10 @@ export const SimplifyControls = () => {
     simplifyDispatch,
   ] = useContext(SimplifyContext);
 
+  if (simplification == 'true') {
+    simplifyDispatch({ type: 'setApply', apply: true });
+    simplification = 'false';
+  }
   const onApplyChange = (evt) => {
     simplifyDispatch({ type: 'setApply', apply: evt.target.checked });
   };
@@ -33,7 +37,10 @@ export const SimplifyControls = () => {
   };
 
   const onAmountChange = (evt) => {
-    simplifyDispatch({ type: 'setAmount', amount: +evt.target.value / 100 });
+    simplifyDispatch({
+      type: 'setAmount',
+      amount: +evt.target.value / 100,
+    });
   };
 
   const onRowsChange = (evt) => {

@@ -46,7 +46,6 @@ export const App = () => {
 
   const onSelectChange = (evt) => {
     const url = evt.target.value;
-
     setDataset(url);
     loadData(url);
   };
@@ -62,6 +61,10 @@ export const App = () => {
   // Get the query string
   const queryParams = new URLSearchParams(window.location.search);
   const mode = queryParams.get('mode');
+  // const target_dataset = queryParams.get('dataset');
+  const clusterCol = queryParams.get('clusterCol');
+  const ascending = queryParams.get('ascending');
+  const simplification = queryParams.get('simplification');
 
   return (
     <SimplifyProvider>
@@ -105,14 +108,19 @@ export const App = () => {
           <Container fluid style={{ height: 'calc(100% - 100px)' }}>
             <Row style={{ height: '100%' }}>
               <Col xs={10} className='mt-3' style={{ height: '100%' }}>
-                <TableWrapper data={data} />
+                <TableWrapper
+                  data={data}
+                  clusterCol={clusterCol}
+                  ascending={ascending}
+                  simplification={simplification}
+                />
               </Col>
               <Col className='bg-dark'>
                 {mode === 'simple' ? (
                   <Stack gap={3}></Stack>
                 ) : (
                   <Stack gap={3}>
-                    <SimplifyControls />
+                    <SimplifyControls simplification={simplification} />
                     <VisualizationControls />
                   </Stack>
                 )}

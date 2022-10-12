@@ -25,6 +25,8 @@ export const digestable = () => {
     relations = [],
     clustering = false,
     // Parameters
+    applyClusterColumn = NaN,
+    sort_order = 'ascending',
     applySimplification = false,
     simplificationMethod = 'threshold',
     simplificationAmount = 0.9,
@@ -69,13 +71,34 @@ export const digestable = () => {
 
           return table;
         });
-
       createColumns(d);
       createData(d);
       processData();
       sortTable();
       drawTable();
     });
+    if (applyClusterColumn) {
+      columns.forEach((d) => {
+        if (d.name === applyClusterColumn) {
+          clusterByColumn(d);
+          if (sort_order === 'ascending') {
+            clusterByColumn(d);
+          }
+          processData();
+          sortTable();
+          drawTable();
+          dispatcher.call('clusterByColumn', this, d);
+        }
+      });
+    }
+    if (applySimplification) {
+      const clusterColumn = columns.find(({ cluster }) => cluster !== null);
+      if (clusterColumn && clusterColumn.type !== 'id') {
+        processData();
+        sortTable();
+      }
+      drawTable();
+    }
   }
 
   // Helper functions
@@ -1586,6 +1609,40 @@ export const digestable = () => {
     td.selectAll('svg').style('visibility', visVisibility());
   }
 
+  // for task link
+  digestable.applyClusterColumnLink = function(clusterCol, ascending) {
+    if (!arguments.length) return applyClusterColumn;
+    if (!ascending || ascending === 'true') {
+      sort_order = 'ascending';
+    } else {
+      sort_order = 'descending';
+    }
+    applyClusterColumn = clusterCol;
+    return digestable;
+  };
+
+  digestable.applySimpleLink = function(simplification) {
+    if (!arguments.length) return simplification;
+    if (!simplification) return simplification;
+    if (simplification === 'true') {
+      applySimplification = true;
+    }
+    return digestable;
+  };
+
+  // digestable.applyClusterColumn = function(clusterCol) {
+  //   if (!arguments.length) return applyClusterColumn;
+  //   columns.forEach((d) => {
+  //     if (d.name === clusterCol) {
+  //       clusterByColumn(d);
+  //       processData();
+  //       sortTable();
+  //       drawTable();
+  //       dispatcher.call('clusterByColumn', this, d);
+  //     }
+  //   });
+  //   return digestable;
+  // };
   digestable.applySimplification = function(_) {
     if (!arguments.length) return applySimplification;
     applySimplification = _;
