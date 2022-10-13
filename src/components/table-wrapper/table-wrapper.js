@@ -9,8 +9,9 @@ import Footer from './Footer';
 export const TableWrapper = ({
   data,
   clusterCol,
-  ascending,
-  simplification,
+  clusterAscending,
+  sortCol,
+  sortAscending,
 }) => {
   const [
     { apply, method, amount, rows, transformBase, unselect },
@@ -43,7 +44,8 @@ export const TableWrapper = ({
     if (!digestableRef.current) {
       digestableRef.current = digestable()
         .applySimplification(apply)
-        .applyClusterColumnLink(clusterCol, ascending)
+        .applyClusterColumnLink(clusterCol, clusterAscending)
+        .applySortColumnLink(sortCol, sortAscending)
         // .applySimpleLink(simplification)
         .simplificationMethod(method.name)
         .simplificationAmount(amount)

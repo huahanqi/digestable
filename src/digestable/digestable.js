@@ -26,6 +26,8 @@ export const digestable = () => {
     clustering = false,
     // Parameters
     applyClusterColumn = NaN,
+    applySortColumn = NaN,
+    cluster_order = 'ascending',
     sort_order = 'ascending',
     applySimplification = false,
     simplificationMethod = 'threshold',
@@ -77,28 +79,43 @@ export const digestable = () => {
       sortTable();
       drawTable();
     });
+
+    // if have query string, change initial loading state
+
+    // cluster by col
     if (applyClusterColumn) {
       columns.forEach((d) => {
         if (d.name === applyClusterColumn) {
           clusterByColumn(d);
-          if (sort_order === 'ascending') {
-            clusterByColumn(d);
-          }
           processData();
           sortTable();
           drawTable();
+          if (cluster_order === 'ascending') {
+            clusterByColumn(d);
+            processData();
+            sortTable();
+            drawTable();
+          }
           dispatcher.call('clusterByColumn', this, d);
         }
       });
     }
-    // if (applySimplification) {
-    //   const clusterColumn = columns.find(({ cluster }) => cluster !== null);
-    //   if (clusterColumn && clusterColumn.type !== 'id') {
-    //     processData();
-    //     sortTable();
-    //   }
-    //   drawTable();
-    // }
+
+    // if cluster by a categorical col then can sort
+    if (applySortColumn) {
+      columns.forEach((d) => {
+        if (d.name === applySortColumn) {
+          sortByColumn(d);
+          sortTable();
+          drawTable();
+          if (sort_order === 'ascending') {
+            sortByColumn(d);
+            sortTable();
+            drawTable();
+          }
+        }
+      });
+    }
   }
 
   // Helper functions
@@ -998,6 +1015,8 @@ export const digestable = () => {
 
       const sortColumn = columns.find(({ sort }) => sort !== null);
       const clusterColumn = columns.find(({ cluster }) => cluster !== null);
+      console.log(sortColumn);
+      console.log(clusterColumn);
 
       data.forEach((row) => {
         expandedData.push(row);
@@ -1610,14 +1629,28 @@ export const digestable = () => {
   }
 
   // for task link
+
+  // cluster
   digestable.applyClusterColumnLink = function(clusterCol, ascending) {
     if (!arguments.length) return applyClusterColumn;
+    if (!ascending || ascending === 'true') {
+      cluster_order = 'ascending';
+    } else {
+      cluster_order = 'descending';
+    }
+    applyClusterColumn = clusterCol;
+    return digestable;
+  };
+
+  //sort
+  digestable.applySortColumnLink = function(sortCol, ascending) {
+    if (!arguments.length) return applySortColumn;
     if (!ascending || ascending === 'true') {
       sort_order = 'ascending';
     } else {
       sort_order = 'descending';
     }
-    applyClusterColumn = clusterCol;
+    applySortColumn = sortCol;
     return digestable;
   };
 

@@ -63,7 +63,9 @@ export const App = () => {
   const mode = queryParams.get('mode');
   // const target_dataset = queryParams.get('dataset');
   const clusterCol = queryParams.get('clusterCol');
-  const ascending = queryParams.get('ascending');
+  const clusterAscending = queryParams.get('clusterAscending');
+  const sortCol = queryParams.get('sortCol');
+  const sortAscending = queryParams.get('sortAscending');
   const simplification = queryParams.get('simplification');
   const visual = queryParams.get('visual');
 
@@ -112,7 +114,9 @@ export const App = () => {
                 <TableWrapper
                   data={data}
                   clusterCol={clusterCol}
-                  ascending={ascending}
+                  clusterAscending={clusterAscending}
+                  sortCol={sortCol}
+                  sortAscending={sortAscending}
                 />
               </Col>
               <Col className='bg-dark'>
