@@ -75,11 +75,12 @@ export const digestable = () => {
         });
       createColumns(d);
       createData(d);
+      if (applyClusterColumn) clusterByColumn(columns.find(({ name }) => name === applyClusterColumn));
       processData();
       sortTable();
       drawTable();
     });
-
+/*
     // if have query string, change initial loading state
 
     // cluster by col
@@ -116,6 +117,7 @@ export const digestable = () => {
         }
       });
     }
+*/    
   }
 
   // Helper functions
