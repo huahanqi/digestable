@@ -12,6 +12,7 @@ import * as d3 from 'd3';
 import { SimplifyProvider, VisualizationProvider } from './contexts';
 import { TableWrapper } from './components/table-wrapper';
 import { SimplifyControls, VisualizationControls } from './components/controls';
+import { useEffect } from 'react';
 
 const { Brand } = Navbar;
 const { Group, Control, Select } = Form;
@@ -58,6 +59,7 @@ export const App = () => {
       loadData(URL.createObjectURL(file));
     }
   };
+
   // Get the query string
   const queryParams = new URLSearchParams(window.location.search);
   const mode = queryParams.get('mode');
@@ -68,6 +70,20 @@ export const App = () => {
   const sortAscending = queryParams.get('sortAscending');
   const simplification = queryParams.get('simplification');
   const visual = queryParams.get('visual');
+  const targetDataset = queryParams.get('dataset');
+
+  const loadwithPresetData = (targetDataset) => {
+    const d = datasets.find((ds) => ds.name === targetDataset);
+    if (d) {
+      const url = d.url;
+      setDataset(url);
+      loadData(url);
+    }
+  };
+
+  useEffect(() => {
+    loadwithPresetData(targetDataset);
+  }, []);
 
   return (
     <SimplifyProvider>

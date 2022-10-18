@@ -44,8 +44,6 @@ export const TableWrapper = ({
     if (!digestableRef.current) {
       digestableRef.current = digestable()
         .applySimplification(apply)
-        .applyClusterColumnLink(clusterCol, clusterAscending)
-        .applySortColumnLink(sortCol, sortAscending)
         // .applySimpleLink(simplification)
         .simplificationMethod(method.name)
         .simplificationAmount(amount)
@@ -66,7 +64,9 @@ export const TableWrapper = ({
             type: 'setCalculatingRelations',
             calculatingRelations: isCalculating,
           });
-        });
+        })
+        .applyClusterColumnLink(clusterCol, clusterAscending)
+        .applySortColumnLink(sortCol, sortAscending);
     }
   }, []);
 

@@ -75,47 +75,69 @@ export const digestable = () => {
         });
       createColumns(d);
       createData(d);
+
+      // if have query string, change initial loading state
+      if (applyClusterColumn) {
+        const cluster_col = columns.find(
+          ({ name }) => name === applyClusterColumn
+        );
+        if (cluster_col) {
+          clusterByColumn(cluster_col);
+          if (cluster_order === 'ascending') {
+            clusterByColumn(cluster_col);
+          }
+        }
+      }
+      if (applySortColumn) {
+        const sort_col = columns.find(({ name }) => name === applySortColumn);
+        if (sort_col) {
+          sortByColumn(sort_col);
+          if (sort_order === 'ascending') {
+            sortByColumn(sort_col);
+          }
+        }
+      }
       processData();
       sortTable();
       drawTable();
     });
 
-    // if have query string, change initial loading state
+    // // if have query string, change initial loading state
 
-    // cluster by col
-    if (applyClusterColumn) {
-      columns.forEach((d) => {
-        if (d.name === applyClusterColumn) {
-          clusterByColumn(d);
-          processData();
-          sortTable();
-          drawTable();
-          if (cluster_order === 'ascending') {
-            clusterByColumn(d);
-            processData();
-            sortTable();
-            drawTable();
-          }
-          dispatcher.call('clusterByColumn', this, d);
-        }
-      });
-    }
+    // // cluster by col
+    // if (applyClusterColumn) {
+    //   columns.forEach((d) => {
+    //     if (d.name === applyClusterColumn) {
+    //       clusterByColumn(d);
+    //       processData();
+    //       sortTable();
+    //       drawTable();
+    //       if (cluster_order === 'ascending') {
+    //         clusterByColumn(d);
+    //         processData();
+    //         sortTable();
+    //         drawTable();
+    //       }
+    //       dispatcher.call('clusterByColumn', this, d);
+    //     }
+    //   });
+    // }
 
-    // if cluster by a categorical col then can sort
-    if (applySortColumn) {
-      columns.forEach((d) => {
-        if (d.name === applySortColumn) {
-          sortByColumn(d);
-          sortTable();
-          drawTable();
-          if (sort_order === 'ascending') {
-            sortByColumn(d);
-            sortTable();
-            drawTable();
-          }
-        }
-      });
-    }
+    // // if cluster by a categorical col then can sort
+    // if (applySortColumn) {
+    //   columns.forEach((d) => {
+    //     if (d.name === applySortColumn) {
+    //       sortByColumn(d);
+    //       sortTable();
+    //       drawTable();
+    //       if (sort_order === 'ascending') {
+    //         sortByColumn(d);
+    //         sortTable();
+    //         drawTable();
+    //       }
+    //     }
+    //   });
+    // }
   }
 
   // Helper functions
@@ -1001,7 +1023,7 @@ export const digestable = () => {
             return `<div class='group' align="center">${v}</div>`;
           }
 
-          case 'Black Diamond': {
+          case 'Diamond': {
             return `<div class='group' align="center", style="opacity:0.5;" >${v}</div>`;
           }
 
@@ -1112,7 +1134,7 @@ export const digestable = () => {
                 if (isPinned) {
                   td.select('.valueDiv').html(
                     text(
-                      'Black Diamond',
+                      'Diamond',
                       '\u25C6\uFE0E',
                       d.isCluster,
                       column.maxDigits
@@ -1121,7 +1143,7 @@ export const digestable = () => {
                 } else {
                   td.select('.valueDiv').html(
                     text(
-                      column.type,
+                      'Diamond',
                       '\u25C7\uFE0E',
                       d.isCluster,
                       column.maxDigits
