@@ -13,6 +13,7 @@ import { SimplifyProvider, VisualizationProvider } from './contexts';
 import { TableWrapper } from './components/table-wrapper';
 import { SimplifyControls, VisualizationControls } from './components/controls';
 import { useEffect } from 'react';
+import { Search_model } from './search-modal';
 
 const { Brand } = Navbar;
 const { Group, Control, Select } = Form;
@@ -117,9 +118,14 @@ export const App = () => {
               <Col sm='auto' className='text-center'>
                 <span className='text-light'>or</span>
               </Col>
-              <Col>
+              <Col sm='auto'>
                 <Control type='file' accept='.csv' onChange={onFileSelect} />
               </Col>
+              {data && (
+                <Col>
+                  <Search_model style={{}} />
+                </Col>
+              )}
             </Group>
           </Form>
         </Navbar>
