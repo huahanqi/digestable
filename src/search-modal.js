@@ -2,12 +2,36 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import { TableWrapper } from './components/table-wrapper';
+import InputGroup from 'react-bootstrap/InputGroup';
 
-export const Search_model = () => {
+export const Search_model = ({ data }) => {
   const [show, setShow] = useState(false);
+  const [dataDisplayed, setDataDisplayed] = useState(data);
   const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-
+  const handleShow = () => {
+    setDataDisplayed(data);
+    setShow(true);
+  };
+  const [value, setValue] = useState('');
+  //console.log(data);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const columns = data.columns;
+    let final_result = [];
+    //console.log(final_result);
+    for (let i = 0; i < columns.length; i++) {
+      const col = columns[i];
+      const local_result = data.filter((d) =>
+        d[col].toLowerCase().includes(value.toLowerCase())
+      );
+      final_result = [...new Set([...local_result, ...final_result])];
+    }
+    final_result['columns'] = columns;
+    //console.log(final_result);
+    setDataDisplayed(final_result);
+    setValue('');
+  };
   return (
     <>
       <Button variant='primary' onClick={handleShow}>
@@ -25,22 +49,33 @@ export const Search_model = () => {
           <Modal.Title>Search Box</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <Form>
-            <Form.Group className='mb-3' controlId='formBasicEmail'>
-              {/* <Form.Label>Search Box</Form.Label> */}
-              <Form.Control type='text' placeholder='Search' />
-              <Form.Text className='text-muted'>
-                Enter any key words to search in digestable.
-              </Form.Text>
-            </Form.Group>
+          <Form onSubmit={handleSearch}>
+            <InputGroup className='mb-3'>
+              <Form.Control
+                placeholder='Type any relavant information to search'
+                // aria-label='Search'
+                // aria-describedby='basic-addon2'
+                type='text'
+                onChange={(e) => setValue(e.target.value)}
+                value={value}
+              />
+              <Button
+                variant='outline-secondary'
+                id='button-addon2'
+                type='submit'
+              >
+                Search
+              </Button>
+            </InputGroup>
           </Form>
+          <TableWrapper data={dataDisplayed} />
         </Modal.Body>
         <Modal.Footer>
           <Button variant='secondary' onClick={handleClose}>
             Close
           </Button>
           <Button variant='primary' onClick={handleClose}>
-            Save Change
+            Save Selections
           </Button>
         </Modal.Footer>
       </Modal>

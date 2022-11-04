@@ -1037,8 +1037,8 @@ export const digestable = () => {
 
       const sortColumn = columns.find(({ sort }) => sort !== null);
       const clusterColumn = columns.find(({ cluster }) => cluster !== null);
-      console.log(sortColumn);
-      console.log(clusterColumn);
+      // console.log(sortColumn);
+      // console.log(clusterColumn);
 
       data.forEach((row) => {
         expandedData.push(row);

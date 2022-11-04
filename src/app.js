@@ -123,7 +123,7 @@ export const App = () => {
               </Col>
               {data && (
                 <Col>
-                  <Search_model style={{}} />
+                  <Search_model data={data} />
                 </Col>
               )}
             </Group>
