@@ -1123,74 +1123,21 @@ export const digestable = () => {
               // clearer grouping indication for pinned rows
               const isPinned = d3.select(this).classed('pinned');
               const isExpanded = d3.select(this).classed('expanded');
-              if (
-                applySimplification &&
-                idx === 1 &&
-                (isExpanded || isPinned)
-              ) {
-                td.select('.valueDiv .textDiv').html(
-                  text(column.type, '&emsp;' + v, d.isCluster, column.maxDigits)
-                );
-              } else if (
-                applySimplification &&
-                idx === 0 &&
-                (isExpanded || isPinned)
-              ) {
-                if (isPinned) {
-                  td.select('.valueDiv').html(
-                    text(
-                      'Diamond',
-                      '\u25C6\uFE0E',
-                      d.isCluster,
-                      column.maxDigits
-                    ) // BLACK DIAMOND
-                  );
-                } else {
-                  td.select('.valueDiv').html(
-                    text(
-                      'Diamond',
-                      '\u25C7\uFE0E',
-                      d.isCluster,
-                      column.maxDigits
-                    ) // WHITE DIAMOND
-                  );
-                }
-              } else if (idx === 0) {
-                //console.log(allData);
-                //console.log(d);
-                // const val = td
-                //   .select('.valueDiv .group')
-                //   .nodes()
-                //   .map(function(d) {
-                //     return d.innerHTML;
-                //   });
-                //console.log(val);
-                //console.log(val[0] === '\u25BC');
-                if (applySimplification) {
-                  if (d.isCluster) {
-                    var isExpanded_target = false;
-                    d.indeces.forEach((i) => {
-                      isExpanded_target = allData[i].expanded;
-                    });
-                    if (isExpanded_target) {
-                      td.select('.valueDiv').html(
-                        text(
-                          column.type,
-                          '\u25BC\uFE0E',
-                          d.isCluster,
-                          column.maxDigits
-                        ) // BLACK DOWN-POINTING TRIANGLE
-                      );
-                    } else {
-                      td.select('.valueDiv').html(
-                        text(
-                          column.type,
-                          '\u25B6\uFE0E',
-                          d.isCluster,
-                          column.maxDigits
-                        ) //BLACK RIGHT-POINTING TRIANGLE
-                      );
-                    }
+              if (idx === 0) {
+                if (d.isCluster) {
+                  var isExpanded_target = false;
+                  d.indeces.forEach((i) => {
+                    isExpanded_target = allData[i].expanded;
+                  });
+                  if (isExpanded_target) {
+                    td.select('.valueDiv').html(
+                      text(
+                        column.type,
+                        '\u25BC\uFE0E',
+                        d.isCluster,
+                        column.maxDigits
+                      ) // BLACK DOWN-POINTING TRIANGLE
+                    );
                   } else {
                     td.select('.valueDiv').html(
                       text(
@@ -1201,9 +1148,42 @@ export const digestable = () => {
                       ) //BLACK RIGHT-POINTING TRIANGLE
                     );
                   }
+                } else if (isPinned) {
+                  td.select('.valueDiv').html(
+                    text(
+                      'Diamond',
+                      '\u25C6\uFE0E',
+                      d.isCluster,
+                      column.maxDigits
+                    ) // BLACK DIAMOND
+                  );
+                } else if (isExpanded) {
+                  td.select('.valueDiv').html(
+                    text(
+                      'Diamond',
+                      '\u25C7\uFE0E',
+                      d.isCluster,
+                      column.maxDigits
+                    ) // WHITE DIAMOND
+                  );
                 } else {
                   td.select('.valueDiv').html(
                     text(column.type, '', d.isCluster, column.maxDigits)
+                  );
+                }
+              } else if (idx === 1) {
+                if (isExpanded || (isPinned && clustering)) {
+                  td.select('.valueDiv .textDiv').html(
+                    text(
+                      column.type,
+                      '&emsp;' + v,
+                      d.isCluster,
+                      column.maxDigits
+                    )
+                  );
+                } else {
+                  td.select('.valueDiv .textDiv').html(
+                    text(column.type, v, d.isCluster, column.maxDigits)
                   );
                 }
               } else {
