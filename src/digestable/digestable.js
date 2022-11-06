@@ -711,33 +711,38 @@ export const digestable = () => {
           const div = th.each(function(column) {
             d3.select(this)
               .selectAll('.headerDiv')
-              .data(column.type === 'group' ? [] : [column])
+              //.data(column.type === 'group' ? [] : [column])
+              .data([column])
               .join((enter) => {
                 const div = enter.append('div').attr('class', 'headerDiv');
                 //console.log(div);
                 const nameDiv = div.append('div').attr('class', 'nameDiv');
-                nameDiv.append('div').text((d) => d.name);
-                nameDiv
-                  .append('button')
-                  .attr('class', 'headerButton sortButton')
-                  .on('click', (evt, d) => {
-                    sortByColumn(d);
-                    sortTable();
-                    drawTable();
-                  });
+                if (column.type === 'group') {
+                  nameDiv.append('div').text('\u25C8\uFE0E');
+                } else {
+                  nameDiv.append('div').text((d) => d.name);
+                  nameDiv
+                    .append('button')
+                    .attr('class', 'headerButton sortButton')
+                    .on('click', (evt, d) => {
+                      sortByColumn(d);
+                      sortTable();
+                      drawTable();
+                    });
 
-                nameDiv
-                  .append('button')
-                  .attr('class', 'headerButton clusterButton')
-                  .style('font-weight', 'bold')
-                  .on('click', (evt, d) => {
-                    clusterByColumn(d);
-                    processData();
-                    sortTable();
-                    drawTable();
+                  nameDiv
+                    .append('button')
+                    .attr('class', 'headerButton clusterButton')
+                    .style('font-weight', 'bold')
+                    .on('click', (evt, d) => {
+                      clusterByColumn(d);
+                      processData();
+                      sortTable();
+                      drawTable();
 
-                    dispatcher.call('clusterByColumn', this, d);
-                  });
+                      dispatcher.call('clusterByColumn', this, d);
+                    });
+                }
 
                 div
                   .append('div')
@@ -1107,7 +1112,7 @@ export const digestable = () => {
             .style('padding-bottom', py)
             .each(function(column, idx) {
               // Text
-
+              console.log(d);
               const v = d.values[column.name];
 
               const td = d3
