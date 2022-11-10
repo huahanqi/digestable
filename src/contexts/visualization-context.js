@@ -11,6 +11,7 @@ const initialState = {
   categoryScalingOptions: categoryScalingOptions,
   categoryScaling: categoryScalingOptions[0],
   calculatingRelations: true,
+  indices: [],
 };
 
 const reducer = (state, action) => {
@@ -37,6 +38,12 @@ const reducer = (state, action) => {
       return {
         ...state,
         calculatingRelations: action.calculatingRelations,
+      };
+
+    case 'setIndices':
+      return {
+        ...state,
+        indices: action.indices,
       };
 
     default:

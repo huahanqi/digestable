@@ -139,6 +139,7 @@ export const App = () => {
                   clusterAscending={clusterAscending}
                   sortCol={sortCol}
                   sortAscending={sortAscending}
+                  mainPage={true}
                 />
               </Col>
               <Col className='bg-dark'>

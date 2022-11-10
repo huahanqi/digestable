@@ -47,9 +47,11 @@ export const digestable = () => {
     // Event dispatcher
     dispatcher = d3.dispatch('clusterByColumn'),
     dispatcher_calcRel = d3.dispatch('CalculateRelations'),
+    dispatcher_select = d3.dispatch('selectIndices'),
     // load more data parameters
     displayRowNum = 100,
-    isFullData = false;
+    isFullData = false,
+    selectIndices = [];
 
   function digestable(selection) {
     selection.each(function(d) {
@@ -199,7 +201,10 @@ export const digestable = () => {
     columns = inputData.columns.map((d) => ({
       name: d,
     }));
-    const group = { name: 'group', type: 'group' };
+    const group = {
+      name: 'group',
+      type: 'group',
+    };
     columns.unshift(group);
     //console.log(columns);
     // Determine column types and set column info
@@ -1112,7 +1117,7 @@ export const digestable = () => {
             .style('padding-bottom', py)
             .each(function(column, idx) {
               // Text
-              console.log(d);
+              //console.log(d);
               const v = d.values[column.name];
 
               const td = d3
@@ -1495,13 +1500,15 @@ export const digestable = () => {
             // }
           } else {
             row.pinned = !row.pinned;
+            // TO DO: filter out the selected indices
+            selectIndices = allData.filter((d) => d.pinned);
+            dispatcher_select.call('selectIndices', this, selectIndices);
 
             if (row.pinned) {
               // Already shown
               d3.select(this)
                 .selectAll('td')
                 .classed('pinned', true);
-
               drawTable();
             } else {
               // Need to hide
@@ -1735,6 +1742,19 @@ export const digestable = () => {
     return digestable;
   };
 
+  // selectIndices function
+  digestable.selectIndices = function(selectIndices) {
+    selectIndices.forEach((r1) => {
+      allData.forEach((r2) => {
+        if (r1.initialIndex === r2.initialIndex) {
+          r2.pinned = true;
+        }
+      });
+    });
+    drawTable();
+    return digestable;
+  };
+
   digestable.visualizationMode = function(_) {
     if (!arguments.length) return visualizationMode;
     visualizationMode = _;
@@ -1761,16 +1781,22 @@ export const digestable = () => {
     return digestable;
   };
 
-  // For registering event callbacks
+  // For registering cluster by column callbacks
   digestable.on = function() {
     const value = dispatcher.on.apply(dispatcher, arguments);
     return value === dispatcher ? digestable : value;
   };
 
-  // For registering event callbacks
+  // For registering calculation relation callbacks
   digestable.onCalcRel = function() {
     const value = dispatcher_calcRel.on.apply(dispatcher_calcRel, arguments);
     return value === dispatcher_calcRel ? digestable : value;
+  };
+
+  // For registering selection event callbacks
+  digestable.onSelectIndices = function() {
+    const value = dispatcher_select.on.apply(dispatcher_select, arguments);
+    return value === dispatcher_select ? digestable : value;
   };
 
   function loadMoreData(rowNum) {

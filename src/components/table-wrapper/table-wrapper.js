@@ -12,13 +12,14 @@ export const TableWrapper = ({
   clusterAscending,
   sortCol,
   sortAscending,
+  mainPage,
 }) => {
   const [
     { apply, method, amount, rows, transformBase, unselect },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
   const [
-    { mode, showLinks, categoryScaling },
+    { mode, showLinks, categoryScaling, indices },
     visualizationDispatch,
   ] = useContext(VisualizationContext);
   const divRef = useRef();
@@ -42,31 +43,65 @@ export const TableWrapper = ({
   // Create visualization
   useEffect(() => {
     if (!digestableRef.current) {
-      digestableRef.current = digestable()
-        .applySimplification(apply)
-        // .applySimpleLink(simplification)
-        .simplificationMethod(method.name)
-        .simplificationAmount(amount)
-        .simplificationRows(rows)
-        .transformBase(transformBase)
-        .visualizationMode(mode)
-        .categoryScaling(categoryScaling)
-        .on('clusterByColumn', (column) => {
-          simplifyDispatch({
-            type: 'setColumnInfo',
-            columnType: column.type,
-            unique: column.uniqueValues.length,
-          });
-        })
-        .onCalcRel('CalculateRelations', (isCalculating) => {
-          //console.log(isCalculating);
-          visualizationDispatch({
-            type: 'setCalculatingRelations',
-            calculatingRelations: isCalculating,
-          });
-        })
-        .applyClusterColumnLink(clusterCol, clusterAscending)
-        .applySortColumnLink(sortCol, sortAscending);
+      if (mainPage) {
+        digestableRef.current = digestable()
+          .applySimplification(apply)
+          // .applySimpleLink(simplification)
+          .simplificationMethod(method.name)
+          .simplificationAmount(amount)
+          .simplificationRows(rows)
+          .transformBase(transformBase)
+          .visualizationMode(mode)
+          .categoryScaling(categoryScaling)
+          .on('clusterByColumn', (column) => {
+            simplifyDispatch({
+              type: 'setColumnInfo',
+              columnType: column.type,
+              unique: column.uniqueValues.length,
+            });
+          })
+          .onCalcRel('CalculateRelations', (isCalculating) => {
+            //console.log(isCalculating);
+            visualizationDispatch({
+              type: 'setCalculatingRelations',
+              calculatingRelations: isCalculating,
+            });
+          })
+          .applyClusterColumnLink(clusterCol, clusterAscending)
+          .applySortColumnLink(sortCol, sortAscending);
+      } else {
+        digestableRef.current = digestable()
+          .applySimplification(apply)
+          // .applySimpleLink(simplification)
+          .simplificationMethod(method.name)
+          .simplificationAmount(amount)
+          .simplificationRows(rows)
+          .transformBase(transformBase)
+          .visualizationMode(mode)
+          .categoryScaling(categoryScaling)
+          .on('clusterByColumn', (column) => {
+            simplifyDispatch({
+              type: 'setColumnInfo',
+              columnType: column.type,
+              unique: column.uniqueValues.length,
+            });
+          })
+          .onCalcRel('CalculateRelations', (isCalculating) => {
+            //console.log(isCalculating);
+            visualizationDispatch({
+              type: 'setCalculatingRelations',
+              calculatingRelations: isCalculating,
+            });
+          })
+          .onSelectIndices('selectIndices', (selectIndices) => {
+            visualizationDispatch({
+              type: 'setIndices',
+              indices: selectIndices,
+            });
+          })
+          .applyClusterColumnLink(clusterCol, clusterAscending)
+          .applySortColumnLink(sortCol, sortAscending);
+      }
     }
   }, []);
 
@@ -138,6 +173,12 @@ export const TableWrapper = ({
     }
   }, [categoryScaling]);
 
+  useEffect(() => {
+    if (digestableRef.current) {
+      digestableRef.current.selectIndices(indices);
+    }
+  }, [indices]);
+
   // if still calculate relations
   // useEffect(() => {
   //   if (digestableRef.current) {
@@ -176,6 +217,7 @@ export const TableWrapper = ({
       return digestableRef.current.displayRowNum();
     }
   };
+
   return (
     <div
       ref={OuterDivRef}
