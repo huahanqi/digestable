@@ -1738,12 +1738,16 @@ export const digestable = () => {
     allData.forEach((row) => {
       row.pinned = false;
     });
+    console.log(allData);
     drawTable();
     return digestable;
   };
 
   // selectIndices function
   digestable.selectIndices = function(selectIndices) {
+    allData.forEach((row) => {
+      row.pinned = false;
+    });
     selectIndices.forEach((r1) => {
       allData.forEach((r2) => {
         if (r1.initialIndex === r2.initialIndex) {

@@ -1,20 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { TableWrapper } from './components/table-wrapper';
 import InputGroup from 'react-bootstrap/InputGroup';
+import { SimplifyContext } from './contexts';
 
 export const Search_model = ({ data }) => {
+  const [{ unselect }, simplifyDispatch] = useContext(SimplifyContext);
   const [show, setShow] = useState(false);
   const [dataDisplayed, setDataDisplayed] = useState(data);
-  const handleClose = () => setShow(false);
+  const handleSave = () => setShow(false);
   const handleShow = () => {
     setDataDisplayed(data);
     setShow(true);
   };
   const [value, setValue] = useState('');
-  //console.log(data);
+
+  const handleCancel = (evt) => {
+    simplifyDispatch({
+      type: 'setUnselect',
+      unselect: evt.target.value === 'true',
+    });
+    setShow(false);
+  };
   const handleSearch = (e) => {
     e.preventDefault();
     const columns = data.columns;
@@ -41,7 +50,7 @@ export const Search_model = ({ data }) => {
       <Modal
         size='lg'
         show={show}
-        onHide={handleClose}
+        onHide={handleSave}
         backdrop='static'
         keyboard={false}
       >
@@ -71,10 +80,10 @@ export const Search_model = ({ data }) => {
           <TableWrapper data={dataDisplayed} />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant='secondary' onClick={handleClose}>
-            Close
+          <Button variant='secondary' onClick={handleCancel} value={!unselect}>
+            Cancel
           </Button>
-          <Button variant='primary' onClick={handleClose}>
+          <Button variant='primary' onClick={handleSave}>
             Save Selections
           </Button>
         </Modal.Footer>
