@@ -1500,7 +1500,6 @@ export const digestable = () => {
             // }
           } else {
             row.pinned = !row.pinned;
-            // TO DO: filter out the selected indices
             selectIndices = allData.filter((d) => d.pinned);
             dispatcher_select.call('selectIndices', this, selectIndices);
 
@@ -1738,7 +1737,6 @@ export const digestable = () => {
     allData.forEach((row) => {
       row.pinned = false;
     });
-    console.log(allData);
     drawTable();
     return digestable;
   };
@@ -1748,9 +1746,11 @@ export const digestable = () => {
     allData.forEach((row) => {
       row.pinned = false;
     });
+    console.log(allData);
+    console.log(selectIndices);
     selectIndices.forEach((r1) => {
       allData.forEach((r2) => {
-        if (r1.initialIndex === r2.initialIndex) {
+        if (r1.values.index === r2.values.index) {
           r2.pinned = true;
         }
       });

@@ -4,23 +4,32 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { TableWrapper } from './components/table-wrapper';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { SimplifyContext } from './contexts';
+import { SimplifyContext, VisualizationContext } from './contexts';
 
 export const Search_model = ({ data }) => {
-  const [{ unselect }, simplifyDispatch] = useContext(SimplifyContext);
+  // const [{ unselect }, simplifyDispatch] = useContext(SimplifyContext);
+  const [{ indices }, visualizationDispatch] = useContext(VisualizationContext);
   const [show, setShow] = useState(false);
   const [dataDisplayed, setDataDisplayed] = useState(data);
   const handleSave = () => setShow(false);
   const handleShow = () => {
+    visualizationDispatch({
+      type: 'setIndices',
+      indices: [],
+    });
     setDataDisplayed(data);
     setShow(true);
   };
   const [value, setValue] = useState('');
 
-  const handleCancel = (evt) => {
-    simplifyDispatch({
-      type: 'setUnselect',
-      unselect: evt.target.value === 'true',
+  const handleCancel = () => {
+    // simplifyDispatch({
+    //   type: 'setUnselect',
+    //   unselect: evt.target.value === 'true',
+    // });
+    visualizationDispatch({
+      type: 'setIndices',
+      indices: [],
     });
     setShow(false);
   };
@@ -28,7 +37,6 @@ export const Search_model = ({ data }) => {
     e.preventDefault();
     const columns = data.columns;
     let final_result = [];
-    //console.log(final_result);
     for (let i = 0; i < columns.length; i++) {
       const col = columns[i];
       const local_result = data.filter((d) =>
@@ -37,7 +45,6 @@ export const Search_model = ({ data }) => {
       final_result = [...new Set([...local_result, ...final_result])];
     }
     final_result['columns'] = columns;
-    //console.log(final_result);
     setDataDisplayed(final_result);
     setValue('');
   };
@@ -80,7 +87,7 @@ export const Search_model = ({ data }) => {
           <TableWrapper data={dataDisplayed} />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant='secondary' onClick={handleCancel} value={!unselect}>
+          <Button variant='secondary' onClick={handleCancel}>
             Cancel
           </Button>
           <Button variant='primary' onClick={handleSave}>

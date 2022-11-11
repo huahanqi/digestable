@@ -38,7 +38,9 @@ export const App = () => {
 
     try {
       const csvData = await d3.csv(url);
-
+      // create idx col for later use
+      csvData.forEach((d, i) => (d['index'] = i));
+      console.log(csvData);
       setData(csvData);
       setLoading(false);
     } catch (error) {
