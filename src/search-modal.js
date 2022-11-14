@@ -13,10 +13,10 @@ export const Search_model = ({ data }) => {
   const [dataDisplayed, setDataDisplayed] = useState(data);
   const handleSave = () => setShow(false);
   const handleShow = () => {
-    visualizationDispatch({
-      type: 'setIndices',
-      indices: [],
-    });
+    // visualizationDispatch({
+    //   type: 'setIndices',
+    //   indices: [],
+    // });
     setDataDisplayed(data);
     setShow(true);
   };
