@@ -8,30 +8,41 @@ import { SimplifyContext, VisualizationContext } from './contexts';
 
 export const Search_model = ({ data }) => {
   // const [{ unselect }, simplifyDispatch] = useContext(SimplifyContext);
-  const [{ indices }, visualizationDispatch] = useContext(VisualizationContext);
-  const [show, setShow] = useState(false);
+  const [{ showSearch }, visualizationDispatch] = useContext(
+    VisualizationContext
+  );
+  // make variable "show" global
+  //const [show, setShow] = useState(false);
   const [dataDisplayed, setDataDisplayed] = useState(data);
-  const handleSave = () => setShow(false);
+  const handleSave = () => {
+    //setShow(false);
+    visualizationDispatch({
+      type: 'setShowSearch',
+      showSearch: false,
+    });
+  };
   const handleShow = () => {
-    // visualizationDispatch({
-    //   type: 'setIndices',
-    //   indices: [],
-    // });
+    visualizationDispatch({
+      type: 'setPrepareIndices',
+      prepareIndices: [],
+    });
     setDataDisplayed(data);
-    setShow(true);
+    visualizationDispatch({
+      type: 'setShowSearch',
+      showSearch: true,
+    });
   };
   const [value, setValue] = useState('');
 
   const handleCancel = () => {
-    // simplifyDispatch({
-    //   type: 'setUnselect',
-    //   unselect: evt.target.value === 'true',
-    // });
     visualizationDispatch({
-      type: 'setIndices',
-      indices: [],
+      type: 'setPrepareIndices',
+      prepareIndices: [],
     });
-    setShow(false);
+    visualizationDispatch({
+      type: 'setShowSearch',
+      showSearch: false,
+    });
   };
   const handleSearch = (e) => {
     e.preventDefault();
@@ -56,7 +67,7 @@ export const Search_model = ({ data }) => {
 
       <Modal
         size='lg'
-        show={show}
+        show={showSearch}
         onHide={handleSave}
         backdrop='static'
         keyboard={false}

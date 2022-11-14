@@ -1500,13 +1500,7 @@ export const digestable = () => {
             // }
           } else {
             row.pinned = !row.pinned;
-            selectIndices = [
-              ...new Set([
-                ...selectIndices,
-                ...allData.filter((d) => d.pinned),
-              ]),
-            ];
-            console.log(selectIndices);
+            selectIndices = allData.filter((d) => d.pinned);
             dispatcher_select.call('selectIndices', this, selectIndices);
 
             if (row.pinned) {

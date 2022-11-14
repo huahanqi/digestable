@@ -11,7 +11,9 @@ const initialState = {
   categoryScalingOptions: categoryScalingOptions,
   categoryScaling: categoryScalingOptions[0],
   calculatingRelations: true,
-  indices: [],
+  mainIndices: [],
+  prepareIndices: [],
+  showSearch: false,
 };
 
 const reducer = (state, action) => {
@@ -40,10 +42,22 @@ const reducer = (state, action) => {
         calculatingRelations: action.calculatingRelations,
       };
 
-    case 'setIndices':
+    case 'setMainIndices':
       return {
         ...state,
-        indices: action.indices,
+        mainIndices: action.mainIndices,
+      };
+
+    case 'setPrepareIndices':
+      return {
+        ...state,
+        prepareIndices: action.prepareIndices,
+      };
+
+    case 'setShowSearch':
+      return {
+        ...state,
+        showSearch: action.showSearch,
       };
 
     default:

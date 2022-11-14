@@ -12,13 +12,22 @@ export const TableWrapper = ({
   clusterAscending,
   sortCol,
   sortAscending,
+  mainPage,
+  show,
 }) => {
   const [
     { apply, method, amount, rows, transformBase, unselect },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
   const [
-    { mode, showLinks, categoryScaling, indices },
+    {
+      mode,
+      showLinks,
+      categoryScaling,
+      mainIndices,
+      prepareIndices,
+      showSearch,
+    },
     visualizationDispatch,
   ] = useContext(VisualizationContext);
   const divRef = useRef();
@@ -42,38 +51,73 @@ export const TableWrapper = ({
   // Create visualization
   useEffect(() => {
     if (!digestableRef.current) {
-      digestableRef.current = digestable()
-        .applySimplification(apply)
-        // .applySimpleLink(simplification)
-        .selectInitialIndices(indices)
-        .simplificationMethod(method.name)
-        .simplificationAmount(amount)
-        .simplificationRows(rows)
-        .transformBase(transformBase)
-        .visualizationMode(mode)
-        .categoryScaling(categoryScaling)
-        .on('clusterByColumn', (column) => {
-          simplifyDispatch({
-            type: 'setColumnInfo',
-            columnType: column.type,
-            unique: column.uniqueValues.length,
-          });
-        })
-        .onCalcRel('CalculateRelations', (isCalculating) => {
-          //console.log(isCalculating);
-          visualizationDispatch({
-            type: 'setCalculatingRelations',
-            calculatingRelations: isCalculating,
-          });
-        })
-        .onSelectIndices('selectIndices', (selectIndices) => {
-          visualizationDispatch({
-            type: 'setIndices',
-            indices: selectIndices,
-          });
-        })
-        .applyClusterColumnLink(clusterCol, clusterAscending)
-        .applySortColumnLink(sortCol, sortAscending);
+      if (mainPage) {
+        digestableRef.current = digestable()
+          .applySimplification(apply)
+          // .applySimpleLink(simplification)
+          .selectInitialIndices(mainIndices)
+          .simplificationMethod(method.name)
+          .simplificationAmount(amount)
+          .simplificationRows(rows)
+          .transformBase(transformBase)
+          .visualizationMode(mode)
+          .categoryScaling(categoryScaling)
+          .on('clusterByColumn', (column) => {
+            simplifyDispatch({
+              type: 'setColumnInfo',
+              columnType: column.type,
+              unique: column.uniqueValues.length,
+            });
+          })
+          .onCalcRel('CalculateRelations', (isCalculating) => {
+            //console.log(isCalculating);
+            visualizationDispatch({
+              type: 'setCalculatingRelations',
+              calculatingRelations: isCalculating,
+            });
+          })
+          .onSelectIndices('selectIndices', (selectIndices) => {
+            visualizationDispatch({
+              type: 'setMainIndices',
+              mainIndices: selectIndices,
+            });
+          })
+          .applyClusterColumnLink(clusterCol, clusterAscending)
+          .applySortColumnLink(sortCol, sortAscending);
+      } else {
+        digestableRef.current = digestable()
+          .applySimplification(apply)
+          // .applySimpleLink(simplification)
+          .selectInitialIndices(prepareIndices)
+          .simplificationMethod(method.name)
+          .simplificationAmount(amount)
+          .simplificationRows(rows)
+          .transformBase(transformBase)
+          .visualizationMode(mode)
+          .categoryScaling(categoryScaling)
+          .on('clusterByColumn', (column) => {
+            simplifyDispatch({
+              type: 'setColumnInfo',
+              columnType: column.type,
+              unique: column.uniqueValues.length,
+            });
+          })
+          .onCalcRel('CalculateRelations', (isCalculating) => {
+            //console.log(isCalculating);
+            visualizationDispatch({
+              type: 'setCalculatingRelations',
+              calculatingRelations: isCalculating,
+            });
+          })
+          .onSelectIndices('selectIndices', (selectIndices) => {
+            visualizationDispatch({
+              type: 'setPrepareIndices',
+              prepareIndices: selectIndices,
+            });
+          })
+          .applyClusterColumnLink(clusterCol, clusterAscending)
+          .applySortColumnLink(sortCol, sortAscending);
+      }
     }
   }, []);
 
@@ -123,6 +167,10 @@ export const TableWrapper = ({
   useEffect(() => {
     if (digestableRef.current) {
       digestableRef.current.unselect();
+      // visualizationDispatch({
+      //   type: 'setMainIndices',
+      //   mainIndices: [],
+      // });
     }
   }, [unselect]);
 
@@ -147,9 +195,21 @@ export const TableWrapper = ({
 
   useEffect(() => {
     if (digestableRef.current) {
-      digestableRef.current.selectIndices(indices);
+      if (!showSearch) {
+        const displayIndices = [
+          ...new Set([...mainIndices, ...prepareIndices]),
+        ];
+        console.log(mainIndices);
+        console.log(prepareIndices);
+        console.log(displayIndices);
+        digestableRef.current.selectIndices(displayIndices);
+        visualizationDispatch({
+          type: 'setMainIndices',
+          mainIndices: displayIndices,
+        });
+      }
     }
-  }, [indices]);
+  }, [showSearch]);
 
   // if still calculate relations
   // useEffect(() => {
