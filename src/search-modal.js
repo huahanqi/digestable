@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { TableWrapper } from './components/table-wrapper';
 import InputGroup from 'react-bootstrap/InputGroup';
-import { SimplifyContext, VisualizationContext } from './contexts';
+import { VisualizationContext } from './contexts';
 
 export const Search_model = ({ data }) => {
   // const [{ unselect }, simplifyDispatch] = useContext(SimplifyContext);

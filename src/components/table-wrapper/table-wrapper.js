@@ -13,7 +13,6 @@ export const TableWrapper = ({
   sortCol,
   sortAscending,
   mainPage,
-  show,
 }) => {
   const [
     { apply, method, amount, rows, transformBase, unselect },
@@ -167,10 +166,6 @@ export const TableWrapper = ({
   useEffect(() => {
     if (digestableRef.current) {
       digestableRef.current.unselect();
-      // visualizationDispatch({
-      //   type: 'setMainIndices',
-      //   mainIndices: [],
-      // });
     }
   }, [unselect]);
 
@@ -199,9 +194,6 @@ export const TableWrapper = ({
         const displayIndices = [
           ...new Set([...mainIndices, ...prepareIndices]),
         ];
-        console.log(mainIndices);
-        console.log(prepareIndices);
-        console.log(displayIndices);
         digestableRef.current.selectIndices(displayIndices);
         visualizationDispatch({
           type: 'setMainIndices',

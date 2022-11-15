@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useContext } from 'react';
 import { Form, FloatingLabel, Button } from 'react-bootstrap';
-import { SimplifyContext } from '../../contexts';
+import { SimplifyContext, VisualizationContext } from '../../contexts';
 import { ControlPanel } from './controlPanel';
 
 const { Group, Label, Check, Select, Range, Control } = Form;
@@ -21,6 +21,7 @@ export const SimplifyControls = ({ simplification }) => {
     },
     simplifyDispatch,
   ] = useContext(SimplifyContext);
+  const [{}, visualizationDispatch] = useContext(VisualizationContext);
 
   useEffect(() => {
     if (simplification === 'true') {
@@ -62,6 +63,10 @@ export const SimplifyControls = ({ simplification }) => {
     simplifyDispatch({
       type: 'setUnselect',
       unselect: evt.target.value === 'true',
+    });
+    visualizationDispatch({
+      type: 'setMainIndices',
+      mainIndices: [],
     });
   };
 
