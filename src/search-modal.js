@@ -61,7 +61,7 @@ export const Search_model = ({ data }) => {
   };
   return (
     <>
-      <Button variant='primary' onClick={handleShow}>
+      <Button variant='light' onClick={handleShow}>
         Search Rows
       </Button>
 

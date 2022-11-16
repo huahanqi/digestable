@@ -723,7 +723,10 @@ export const digestable = () => {
                 //console.log(div);
                 const nameDiv = div.append('div').attr('class', 'nameDiv');
                 if (column.type === 'group') {
-                  nameDiv.append('div').text('\u25C8\uFE0E');
+                  nameDiv
+                    .append('div')
+                    .text('\u25C6\uFE0E')
+                    .style('margin', 'auto');
                 } else {
                   nameDiv.append('div').text((d) => d.name);
                   nameDiv
