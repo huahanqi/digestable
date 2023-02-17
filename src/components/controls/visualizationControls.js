@@ -64,43 +64,6 @@ export const VisualizationControls = ({ visual }) => {
         </FloatingLabel>
       </Group>
       <Group>
-        {calculatingRelations ? (
-          <>
-            <Check
-              type='checkbox'
-              label='Show links'
-              id='show-links-checkbox'
-              size='sm'
-              checked={showLinks}
-              onChange={onShowLinksChange}
-              disabled={calculatingRelations}
-            />
-            {/* <Spinner
-                animation='border'
-                style={{
-                  width: '1.5rem',
-                  height: '1.5rem',
-                  position: 'relative',
-                  right: '20%',
-                }}
-              /> */}
-            <p className='text-muted small' style={{ marginBottom: '0rem' }}>
-              Calculating...
-            </p>
-          </>
-        ) : (
-          <Check
-            type='checkbox'
-            label='Show links'
-            id='show-links-checkbox'
-            size='sm'
-            checked={showLinks}
-            onChange={onShowLinksChange}
-            disabled={calculatingRelations}
-          />
-        )}
-      </Group>
-      <Group>
         <FloatingLabel label='Category scaling'>
           <Select value={categoryScaling} onChange={onCategoryScalingChange}>
             {categoryScalingOptions.map((option, i) => (

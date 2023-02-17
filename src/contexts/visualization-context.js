@@ -2,7 +2,8 @@ import React, { createContext, useReducer } from 'react';
 
 const modes = ['text', 'visualizations', 'both', 'interactive'];
 
-const categoryScalingOptions = ['row', 'column'];
+// const categoryScalingOptions = ['row', 'column'];
+const categoryScalingOptions = ['row'];
 
 const initialState = {
   modes: modes,

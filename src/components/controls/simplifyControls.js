@@ -49,7 +49,11 @@ export const SimplifyControls = ({ simplification }) => {
   };
 
   const onRowsChange = (evt) => {
-    simplifyDispatch({ type: 'setRows', rows: +evt.target.value });
+    if (evt.target.value === '') {
+      simplifyDispatch({ type: 'setRows', rows: 1 });
+    } else {
+      simplifyDispatch({ type: 'setRows', rows: +evt.target.value });
+    }
   };
 
   const onTransformBaseChange = (evt) => {

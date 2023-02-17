@@ -2,8 +2,8 @@ import React, { createContext, useReducer } from 'react';
 
 const methods = [
   { name: 'quantiles', type: 'rows' },
-  { name: 'kmeans', type: 'rows' },
-  { name: 'gap', type: 'rows', transform: true },
+  //{ name: 'kmeans', type: 'rows' },
+  //{ name: 'gap', type: 'rows', transform: true },
   //  { name: 'threshold', type: 'amount' }
 ];
 
