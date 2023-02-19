@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from 'react';
 
-const modes = ['text', 'visualizations', 'both', 'interactive'];
-
+// const modes = ['text', 'visualizations', 'both', 'interactive'];
+const modes = ['text', 'visualizations', 'both'];
 // const categoryScalingOptions = ['row', 'column'];
 const categoryScalingOptions = ['row'];
 

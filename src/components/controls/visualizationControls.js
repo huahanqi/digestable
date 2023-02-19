@@ -63,7 +63,7 @@ export const VisualizationControls = ({ visual }) => {
           </Select>
         </FloatingLabel>
       </Group>
-      <Group>
+      {/* <Group>
         <FloatingLabel label='Category scaling'>
           <Select value={categoryScaling} onChange={onCategoryScalingChange}>
             {categoryScalingOptions.map((option, i) => (
@@ -73,7 +73,7 @@ export const VisualizationControls = ({ visual }) => {
             ))}
           </Select>
         </FloatingLabel>
-      </Group>
+      </Group> */}
     </ControlPanel>
   );
 };
