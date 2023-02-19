@@ -114,7 +114,7 @@ export const SimplifyControls = ({ simplification }) => {
             </Group>
           ) : (
             <Group>
-              <Label>Number of rows</Label>
+              <Label>Number of groups</Label>
               <Control
                 type='number'
                 min={1}
